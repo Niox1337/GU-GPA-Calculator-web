@@ -1,0 +1,6 @@
+{
+  "School of Computing Science": [
+    { "name": "Placeholder Course A", "code": "SUBJ0000", "credit": 20, "level": 1 },
+    { "name": "Placeholder Course B", "code": "SUBJ0001", "credit": 10, "level": 4 }
+  ]
+}
