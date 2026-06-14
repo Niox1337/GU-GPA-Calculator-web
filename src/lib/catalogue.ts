@@ -28,3 +28,32 @@ export const SCHOOLS: string[] = Object.keys(catalogue)
 export const COURSE_CATALOGUE: CatalogueCourse[] = Object.entries(catalogue).flatMap(
   ([school, courses]) => courses.map((course) => ({ ...course, school })),
 )
+
+export interface LevelGroup {
+  level: number
+  courses: CatalogueCourse[]
+}
+
+export interface SchoolGroup {
+  school: string
+  total: number
+  levels: LevelGroup[]
+}
+
+/** Courses grouped by school, then by level with both sorted for the search tree. */
+export const CATALOGUE_TREE: SchoolGroup[] = SCHOOLS.map((school) => {
+  const courses = COURSE_CATALOGUE.filter((c) => c.school === school)
+  const byLevel = new Map<number, CatalogueCourse[]>()
+  for (const c of courses) {
+    const list = byLevel.get(c.level) ?? []
+    list.push(c)
+    byLevel.set(c.level, list)
+  }
+  const levels: LevelGroup[] = [...byLevel.entries()]
+    .sort((a, b) => a[0] - b[0])
+    .map(([level, list]) => ({
+      level,
+      courses: list.sort((a, b) => a.name.localeCompare(b.name)),
+    }))
+  return { school, total: courses.length, levels }
+})

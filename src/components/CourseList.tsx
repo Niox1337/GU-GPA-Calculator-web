@@ -2,9 +2,15 @@ import { useRef, useState } from "react";
 import type { FormEvent } from "react";
 import type { Course } from "../lib/gpa";
 import { GRADES, gradePoint } from "../lib/gpa";
-import { COURSE_CATALOGUE } from "../lib/catalogue";
+import { CATALOGUE_TREE } from "../lib/catalogue";
 import type { CatalogueCourse } from "../lib/catalogue";
-import { CloseIcon, PlusIcon, SearchIcon, TrashIcon } from "./Icons";
+import {
+  ChevronIcon,
+  CloseIcon,
+  PlusIcon,
+  SearchIcon,
+  TrashIcon,
+} from "./Icons";
 
 interface Props {
   courses: Course[];
@@ -32,6 +38,8 @@ export default function CourseList({ courses, onChange, idPrefix }: Props) {
 
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const [openSchools, setOpenSchools] = useState<Set<string>>(new Set());
+  const [openLevels, setOpenLevels] = useState<Set<string>>(new Set());
   const creditRef = useRef<HTMLInputElement>(null);
 
   function addCourse(e: FormEvent) {
@@ -74,16 +82,49 @@ export default function CourseList({ courses, onChange, idPrefix }: Props) {
     onChange(courses.filter((c) => c.id !== id));
   }
 
+  function toggleSchool(school: string) {
+    setOpenSchools((prev) => {
+      const next = new Set(prev);
+      if (next.has(school)) next.delete(school);
+      else next.add(school);
+      return next;
+    });
+  }
+
+  function toggleLevel(key: string) {
+    setOpenLevels((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }
+
+  // Filter by course name or code. An active query auto-expands matching groups.
   const q = query.trim().toLowerCase();
-  const results = (
-    q
-      ? COURSE_CATALOGUE.filter(
-          (c) =>
-            c.name.toLowerCase().includes(q) ||
-            c.code.toLowerCase().includes(q),
-        )
-      : COURSE_CATALOGUE
-  ).slice(0, 80);
+  const tree = q
+    ? CATALOGUE_TREE.map((s) => {
+        const levels = s.levels
+          .map((l) => ({
+            ...l,
+            courses: l.courses.filter(
+              (c) =>
+                c.name.toLowerCase().includes(q) ||
+                c.code.toLowerCase().includes(q),
+            ),
+          }))
+          .filter((l) => l.courses.length > 0);
+        return {
+          ...s,
+          levels,
+          total: levels.reduce((n, l) => n + l.courses.length, 0),
+        };
+      }).filter((s) => s.total > 0)
+    : CATALOGUE_TREE;
+
+  const totalResults = tree.reduce((n, s) => n + s.total, 0);
+  const isSchoolOpen = (school: string) => q !== "" || openSchools.has(school);
+  const isLevelOpen = (key: string) => q !== "" || openLevels.has(key);
 
   return (
     <div className="course-list">
@@ -238,7 +279,7 @@ export default function CourseList({ courses, onChange, idPrefix }: Props) {
                 className="search-input"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search Computing Science courses..."
+                placeholder="Search courses by name or code..."
                 aria-label="Search courses by name or code"
               />
               <button
@@ -252,36 +293,90 @@ export default function CourseList({ courses, onChange, idPrefix }: Props) {
             </div>
 
             <p className="search-meta">
-              University of Glasgow course catalogue · {results.length}
-              {results.length === 80 ? "+" : ""} result
-              {results.length === 1 ? "" : "s"}
+              University of Glasgow course catalogue · {totalResults} course
+              {totalResults === 1 ? "" : "s"}
             </p>
 
-            {results.length === 0 ? (
+            {tree.length === 0 ? (
               <div className="search-empty">No courses match "{query}".</div>
             ) : (
-              <ul className="search-results">
-                {results.map((c) => (
-                  <li key={c.code}>
-                    <button
-                      type="button"
-                      className="search-result"
-                      onClick={() => pickCourse(c)}
-                    >
-                      <span className="search-result__name">{c.name}</span>
-                      <span className="search-result__meta">
-                        <span className="search-result__level">
-                          {LEVEL_LABEL[c.level]}
-                        </span>
-                        <span className="search-result__credit">
-                          {c.credit} cr
-                        </span>
-                        <span className="search-result__code">{c.code}</span>
-                      </span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
+              <div className="catalogue-tree">
+                {tree.map((s) => {
+                  const schoolOpen = isSchoolOpen(s.school);
+                  return (
+                    <div className="cat-school" key={s.school}>
+                      <button
+                        type="button"
+                        className="cat-head cat-head--school"
+                        aria-expanded={schoolOpen}
+                        onClick={() => toggleSchool(s.school)}
+                      >
+                        <ChevronIcon
+                          width={16}
+                          height={16}
+                          className={`cat-chevron${schoolOpen ? " is-open" : ""}`}
+                        />
+                        <span className="cat-head__name">{s.school}</span>
+                        <span className="cat-count">{s.total}</span>
+                      </button>
+
+                      {schoolOpen &&
+                        s.levels.map((l) => {
+                          const key = `${s.school}::${l.level}`;
+                          const levelOpen = isLevelOpen(key);
+                          return (
+                            <div className="cat-level" key={key}>
+                              <button
+                                type="button"
+                                className="cat-head cat-head--level"
+                                aria-expanded={levelOpen}
+                                onClick={() => toggleLevel(key)}
+                              >
+                                <ChevronIcon
+                                  width={15}
+                                  height={15}
+                                  className={`cat-chevron${levelOpen ? " is-open" : ""}`}
+                                />
+                                <span className="cat-head__name">
+                                  {LEVEL_LABEL[l.level] ?? `Level ${l.level}`}
+                                </span>
+                                <span className="cat-count">
+                                  {l.courses.length}
+                                </span>
+                              </button>
+
+                              {levelOpen && (
+                                <ul className="search-results">
+                                  {l.courses.map((c) => (
+                                    <li key={c.code}>
+                                      <button
+                                        type="button"
+                                        className="search-result"
+                                        onClick={() => pickCourse(c)}
+                                      >
+                                        <span className="search-result__name">
+                                          {c.name}
+                                        </span>
+                                        <span className="search-result__meta">
+                                          <span className="search-result__credit">
+                                            {c.credit} cr
+                                          </span>
+                                          <span className="search-result__code">
+                                            {c.code}
+                                          </span>
+                                        </span>
+                                      </button>
+                                    </li>
+                                  ))}
+                                </ul>
+                              )}
+                            </div>
+                          );
+                        })}
+                    </div>
+                  );
+                })}
+              </div>
             )}
             <p className="search-foot">
               Adjust credits after picking if your course differs.
