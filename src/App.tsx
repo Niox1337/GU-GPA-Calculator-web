@@ -13,10 +13,12 @@ import {
   CheckIcon,
   DownloadIcon,
   ExternalIcon,
+  GithubIcon,
   GraduationIcon,
   MoonIcon,
   RotateIcon,
   SparklesIcon,
+  StarIcon,
   SunIcon,
   UploadIcon,
 } from './components/Icons'
@@ -26,6 +28,7 @@ type Theme = 'light' | 'dark'
 type Toast = { kind: 'success' | 'error'; msg: string }
 
 const GRADING_SCHEME_URL = 'https://www.gla.ac.uk/media/Media_124293_smxx.pdf'
+const REPO_URL = 'https://github.com/Niox1337/GU-GPA-Calculator-web'
 
 function usePersistentState<T>(key: string, initial: T): [T, Dispatch<SetStateAction<T>>] {
   const [value, setValue] = useState<T>(() => {
@@ -290,6 +293,18 @@ export default function App() {
           </div>
         )}
       </main>
+
+      <a className="star-cta" href={REPO_URL} target="_blank" rel="noreferrer">
+        <GithubIcon width={22} height={22} className="star-cta__gh" />
+        <span className="star-cta__text">
+          <strong>Enjoying the calculator?</strong>
+          <span>Star it on GitHub to support the project.</span>
+        </span>
+        <span className="star-cta__btn">
+          <StarIcon width={16} height={16} />
+          Star
+        </span>
+      </a>
 
       <footer className="app-footer">
         <p>

@@ -670,6 +670,61 @@
   border-color: var(--border);
 }
 
+/* ---------- Star on GitHub CTA ---------- */
+.star-cta {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.9rem 1.1rem;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  color: var(--text);
+  text-decoration: none;
+  transition: transform 0.15s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+.star-cta:hover {
+  text-decoration: none;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-strong);
+}
+.star-cta__gh {
+  flex-shrink: 0;
+  color: var(--text);
+}
+.star-cta__text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.35;
+  min-width: 0;
+}
+.star-cta__text strong {
+  font-weight: 700;
+}
+.star-cta__text span {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+.star-cta__btn {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+  padding: 0.5rem 0.85rem;
+  border-radius: 999px;
+  font-weight: 650;
+  font-size: 0.88rem;
+  color: #fff;
+  background: linear-gradient(180deg, #f0a83c, #e8821e);
+  box-shadow: var(--shadow-sm);
+}
+.star-cta:hover .star-cta__btn {
+  filter: brightness(1.05);
+}
+
 /* ---------- Footer ---------- */
 .app-footer {
   text-align: center;
