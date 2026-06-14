@@ -93,3 +93,24 @@ export const GraduationIcon = (p: IconProps) => (
     <path d="M6 12v5c0 1 2.7 2.5 6 2.5s6-1.5 6-2.5v-5" />
   </Base>
 )
+
+export const DownloadIcon = (p: IconProps) => (
+  <Base {...p}>
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+    <path d="m7 10 5 5 5-5M12 15V3" />
+  </Base>
+)
+
+export const UploadIcon = (p: IconProps) => (
+  <Base {...p}>
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+    <path d="m17 8-5-5-5 5M12 3v12" />
+  </Base>
+)
+
+export const AlertIcon = (p: IconProps) => (
+  <Base {...p}>
+    <path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" />
+    <path d="M12 9v4M12 17h.01" />
+  </Base>
+)

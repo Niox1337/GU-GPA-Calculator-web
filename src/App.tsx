@@ -1,23 +1,29 @@
-import { useEffect, useState } from 'react'
-import type { Dispatch, SetStateAction } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import type { ChangeEvent, Dispatch, SetStateAction } from 'react'
 import './App.css'
 import uogLogo from './assets/UoG.svg'
 import type { Course } from './lib/gpa'
 import { EXAMPLE_COURSES, computeHonours } from './lib/gpa'
+import { buildExport, downloadFile, parseImport, readFile } from './lib/io'
 import CourseList from './components/CourseList'
 import ResultCard from './components/ResultCard'
 import {
+  AlertIcon,
   BookIcon,
+  CheckIcon,
+  DownloadIcon,
   ExternalIcon,
   GraduationIcon,
   MoonIcon,
   RotateIcon,
   SparklesIcon,
   SunIcon,
+  UploadIcon,
 } from './components/Icons'
 
 type Mode = 'year' | 'honours'
 type Theme = 'light' | 'dark'
+type Toast = { kind: 'success' | 'error'; msg: string }
 
 const GRADING_SCHEME_URL = 'https://www.gla.ac.uk/media/Media_124293_smxx.pdf'
 
@@ -83,15 +89,55 @@ export default function App() {
   const [junior, setJunior] = usePersistentState<Course[]>('gpa.junior', [])
   const [senior, setSenior] = usePersistentState<Course[]>('gpa.senior', [])
 
+  const [toast, setToast] = useState<Toast | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
   useEffect(() => {
     document.documentElement.dataset.theme = theme
   }, [theme])
+
+  useEffect(() => {
+    if (!toast) return
+    const t = setTimeout(() => setToast(null), 4000)
+    return () => clearTimeout(t)
+  }, [toast])
 
   const resetCurrent = () => {
     if (mode === 'year') setYear([])
     else {
       setJunior([])
       setSenior([])
+    }
+  }
+
+  const handleExport = () => {
+    const count = year.length + junior.length + senior.length
+    if (count === 0) {
+      setToast({ kind: 'error', msg: 'Nothing to export yet, add some courses first.' })
+      return
+    }
+    const stamp = new Date().toISOString().slice(0, 10)
+    downloadFile(`glasgow-gpa-${stamp}.json`, buildExport({ year, junior, senior }))
+    setToast({ kind: 'success', msg: `Exported ${count} course${count === 1 ? '' : 's'}.` })
+  }
+
+  const handleImportFile = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    e.target.value = '' // allow re-importing the same file
+    if (!file) return
+
+    const hasData = year.length + junior.length + senior.length > 0
+    if (hasData && !window.confirm('Importing will replace your current courses. Continue?')) return
+
+    try {
+      const bundle = parseImport(await readFile(file))
+      setYear(bundle.year)
+      setJunior(bundle.junior)
+      setSenior(bundle.senior)
+      const count = bundle.year.length + bundle.junior.length + bundle.senior.length
+      setToast({ kind: 'success', msg: `Imported ${count} course${count === 1 ? '' : 's'}.` })
+    } catch (err) {
+      setToast({ kind: 'error', msg: err instanceof Error ? err.message : 'Could not import that file.' })
     }
   }
 
@@ -115,6 +161,33 @@ export default function App() {
         </div>
 
         <div className="header-actions">
+          <button
+            type="button"
+            className="btn btn--ghost"
+            onClick={() => fileInputRef.current?.click()}
+            aria-label="Import grades from a file"
+          >
+            <UploadIcon width={18} height={18} />
+            <span className="btn-text">Import</span>
+          </button>
+          <button
+            type="button"
+            className="btn btn--ghost"
+            onClick={handleExport}
+            aria-label="Export grades to a file"
+          >
+            <DownloadIcon width={18} height={18} />
+            <span className="btn-text">Export</span>
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="application/json,.json"
+            className="sr-only"
+            onChange={handleImportFile}
+            aria-hidden="true"
+            tabIndex={-1}
+          />
           <a className="btn btn--ghost" href={GRADING_SCHEME_URL} target="_blank" rel="noreferrer">
             <BookIcon width={18} height={18} />
             <span className="btn-text">Grading scheme</span>
@@ -227,6 +300,19 @@ export default function App() {
           scale (A1 = 22 down to H = 0). Calculations stay in your browser.
         </p>
       </footer>
+
+      <div className="toast-region" role="status" aria-live="polite">
+        {toast && (
+          <div className={`toast toast--${toast.kind}`}>
+            {toast.kind === 'success' ? (
+              <CheckIcon width={18} height={18} />
+            ) : (
+              <AlertIcon width={18} height={18} />
+            )}
+            <span>{toast.msg}</span>
+          </div>
+        )}
+      </div>
     </div>
   )
 }

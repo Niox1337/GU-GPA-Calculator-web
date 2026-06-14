@@ -15,6 +15,8 @@ This is a React and Vite port of the original
 - Expand the calculation to see each course's points, weight, and contribution
 - See a simple credit distribution by grade band
 - Save courses, theme, and calculator mode in `localStorage`
+- Import and export all courses as a portable JSON file (forgiving import skips
+  blank rows and resets unknown grades to "not taken")
 - Switch between light and dark mode
 
 ## How it works
