@@ -1,6 +1,12 @@
 import { useState } from 'react'
 import type { Course } from '../lib/gpa'
-import { classifyHonours, computeYear, creditDistribution, yearProfile } from '../lib/gpa'
+import {
+  classifyHonours,
+  classifyPGT,
+  computeYear,
+  creditDistribution,
+  yearProfile,
+} from '../lib/gpa'
 import { ChevronIcon } from './Icons'
 
 interface Props {
@@ -15,6 +21,7 @@ export default function ResultCard({ courses }: Props) {
   const distribution = creditDistribution(courses)
   const hasData = result.countedCount > 0
   const honours = classifyHonours(result.gpa1dp, yearProfile(courses))
+  const pgt = classifyPGT(courses)
 
   return (
     <div className="result-card" aria-live="polite">
@@ -45,6 +52,21 @@ export default function ResultCard({ courses }: Props) {
             {hasData ? honours.classification : '-'}
             {hasData && honours.borderline && (
               <span className="border-tag" title={honours.reason}>
+                borderline
+              </span>
+            )}
+          </dd>
+        </div>
+        <div className="stat stat--wide">
+          <dt
+            title="Taught Masters result per rules 9.3 to 9.6. Uses the overall GPA, the taught-only GPA, and the largest course taken as the dissertation."
+          >
+            Masters equivalent
+          </dt>
+          <dd className="stat--muted">
+            {hasData ? pgt.classification : '-'}
+            {hasData && pgt.borderline && (
+              <span className="border-tag" title={pgt.reason}>
                 borderline
               </span>
             )}

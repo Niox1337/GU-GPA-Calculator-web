@@ -255,6 +255,87 @@ export function computeHonours(junior: Course[], senior: Course[]): HonoursResul
   }
 }
 
+const DISTINCTION = 'Distinction'
+const MERIT = 'Merit'
+const PASS = 'Pass'
+
+// gradePoint('B1') = 17 and gradePoint('C1') = 14 are the dissertation thresholds.
+const B1_POINTS = 17
+const C1_POINTS = 14
+const PROJECT_RE = /dissertation|project|thesis|independent|placement|research/i
+
+/**
+ * Classify a taught postgraduate programme as Distinction, Merit, or Pass,
+ * per University of Glasgow generic PGT regulations 9.3 to 9.6.
+ *
+ * Needs three things from the course list: the overall GPA (all 180 credits),
+ * the taught-only GPA, and the grade of the "substantial independent work"
+ * dissertation or project. The dissertation is taken to be the largest-credit
+ * course with ties broken towards project or dissertation-named courses. Borderline
+ * overall GPAs from 17.1 to 17.4 and 14.1 to 14.4 are resolved by the weighted grade
+ * profile across all credits.
+ */
+export function classifyPGT(courses: Course[]): ClassResult {
+  const counted = courses.filter(isCounted)
+  if (counted.length === 0) return { classification: PASS, borderline: false }
+
+  // Identify the dissertation by largest credit, preferring project-named courses.
+  const dissertation = [...counted].sort((a, b) => {
+    const byCredit = Number(b.credit) - Number(a.credit)
+    if (byCredit !== 0) return byCredit
+    return (PROJECT_RE.test(b.name) ? 1 : 0) - (PROJECT_RE.test(a.name) ? 1 : 0)
+  })[0]
+
+  const taughtCourses = counted.filter((c) => c.id !== dissertation.id)
+  const overall = computeYear(counted).gpa1dp
+  const taught = taughtCourses.length ? computeYear(taughtCourses).gpa1dp : overall
+  const dissPoints = gradePoint(dissertation.grade)
+  const profile = yearProfile(counted)
+
+  const g = Math.round(overall * 10)
+  const t = Math.round(taught * 10)
+  const aShare = bandShare(profile, ['A'])
+  const bShare = bandShare(profile, ['A', 'B'])
+
+  // Distinction rule 9.5 requires overall at least 17.5, taught at least 17.0, and independent work at least B1.
+  const distinctionBase = t >= 170 && dissPoints >= B1_POINTS
+  if (g >= 175 && distinctionBase) return { classification: DISTINCTION, borderline: false }
+  if (g >= 171 && g <= 174 && distinctionBase) {
+    if (aShare >= 0.5) {
+      return {
+        classification: DISTINCTION,
+        borderline: true,
+        reason: `GPA ${overall.toFixed(1)} is borderline. At least 50% of the weighted profile is grade A (${pct(aShare)}), so Distinction under rule 9.6`,
+      }
+    }
+    return {
+      classification: MERIT,
+      borderline: true,
+      reason: `GPA ${overall.toFixed(1)} is in the Distinction borderline but less than 50% is grade A (${pct(aShare)}), so Merit`,
+    }
+  }
+
+  // Merit rule 9.3 requires overall at least 14.5, taught at least 14.0, and independent work at least C1.
+  const meritBase = t >= 140 && dissPoints >= C1_POINTS
+  if (g >= 145 && meritBase) return { classification: MERIT, borderline: false }
+  if (g >= 141 && g <= 144 && meritBase) {
+    if (bShare >= 0.5) {
+      return {
+        classification: MERIT,
+        borderline: true,
+        reason: `GPA ${overall.toFixed(1)} is borderline. At least 50% of the weighted profile is grade B or above (${pct(bShare)}), so Merit under rule 9.4`,
+      }
+    }
+    return {
+      classification: PASS,
+      borderline: true,
+      reason: `GPA ${overall.toFixed(1)} is in the Merit borderline but less than 50% is grade B or above (${pct(bShare)}), so Pass`,
+    }
+  }
+
+  return { classification: PASS, borderline: false }
+}
+
 // Example Senior Honours year for Computing Science.
 // Course titles and credit weights follow the UofG catalogue pattern.
 export const EXAMPLE_COURSES: Omit<Course, 'id'>[] = [
