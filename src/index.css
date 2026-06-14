@@ -1,111 +1,175 @@
+/* ----------------------------------------------------------------------------
+   Design tokens + reset for Glasgow GPA Calculator
+   Brand: University of Glasgow navy (#12375e). Light is default; [data-theme]
+   on <html> switches themes explicitly.
+---------------------------------------------------------------------------- */
+
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+  /* Brand */
+  --navy: #12375e;
+  --navy-700: #1b4a7a;
+  --accent: #1f6feb;
+  --accent-600: #1a5fcc;
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
+  /* Surfaces & text (light) */
+  --bg: #eef2f7;
+  --bg-grad: radial-gradient(1200px 600px at 80% -10%, #e2ecfa 0%, transparent 60%),
+    radial-gradient(900px 500px at -10% 10%, #e9f0f8 0%, transparent 55%);
+  --surface: #ffffff;
+  --surface-2: #f6f8fc;
+  --text: #0d1b2a;
+  --text-muted: #5a6b7e;
+  --border: #e2e8f1;
+  --border-strong: #cfd9e6;
 
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
+  /* Feedback */
+  --danger: #d23b3b;
+  --danger-bg: #fdecec;
+  --success: #2f9e44;
+
+  /* Grade band colours (work in both themes) */
+  --band-a: #2f9e44;
+  --band-b: #69b53b;
+  --band-c: #c9a227;
+  --band-d: #e8821e;
+  --band-e: #e25822;
+  --band-f: #d23b3b;
+  --band-g: #b02a37;
+  --band-h: #7a1f2b;
+
+  /* Shape & depth */
+  --radius: 14px;
+  --radius-sm: 10px;
+  --radius-lg: 22px;
+  --shadow-sm: 0 1px 2px rgba(13, 27, 42, 0.06), 0 1px 3px rgba(13, 27, 42, 0.08);
+  --shadow-md: 0 8px 24px -8px rgba(13, 27, 42, 0.18), 0 2px 6px rgba(13, 27, 42, 0.06);
+  --shadow-lg: 0 24px 60px -20px rgba(13, 27, 42, 0.28);
+  --ring: 0 0 0 3px rgba(31, 111, 235, 0.35);
+
+  --sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  color-scheme: light;
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.55;
   color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
+  text-rendering: optimizeLegibility;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
+:root[data-theme='dark'] {
+  --navy: #5aa0ff;
+  --navy-700: #7db4ff;
+  --accent: #4d8dff;
+  --accent-600: #6aa0ff;
 
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
+  --bg: #0b1320;
+  --bg-grad: radial-gradient(1200px 600px at 80% -10%, #122742 0%, transparent 60%),
+    radial-gradient(900px 500px at -10% 10%, #0f1d33 0%, transparent 55%);
+  --surface: #131e30;
+  --surface-2: #18263c;
+  --text: #eaf1fb;
+  --text-muted: #9bb0c8;
+  --border: #243345;
+  --border-strong: #324559;
+
+  --danger: #ff6b6b;
+  --danger-bg: #2a1820;
+  --success: #51cf66;
+
+  --band-a: #51cf66;
+  --band-b: #94d82d;
+  --band-c: #ffd43b;
+  --band-d: #ffa94d;
+  --band-e: #ff8787;
+  --band-f: #ff6b6b;
+  --band-g: #fa5252;
+  --band-h: #e03131;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 10px 30px -12px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 28px 70px -24px rgba(0, 0, 0, 0.7);
+  --ring: 0 0 0 3px rgba(77, 141, 255, 0.4);
+
+  color-scheme: dark;
 }
 
-#root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
-body {
+* {
   margin: 0;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  min-height: 100dvh;
+  background-color: var(--bg);
+  background-image: var(--bg-grad);
+  background-attachment: fixed;
+  color: var(--text);
 }
 
 h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
+h2,
+h3 {
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--text);
 }
 
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+input,
+select {
+  font: inherit;
+  color: var(--text);
+}
+
+:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+  border-radius: 6px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
   }
-}
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
-}
-p {
-  margin: 0;
-}
-
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
-}
-
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
 }
