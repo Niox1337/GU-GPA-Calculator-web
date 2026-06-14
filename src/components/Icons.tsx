@@ -115,6 +115,17 @@ export const AlertIcon = (p: IconProps) => (
   </Base>
 )
 
+export const SearchIcon = (p: IconProps) => (
+  <Base {...p}>
+    <circle cx="11" cy="11" r="8" />
+    <path d="m21 21-4.3-4.3" />
+  </Base>
+)
+
+export const CloseIcon = (p: IconProps) => (
+  <Base {...p}><path d="M18 6 6 18M6 6l12 12" /></Base>
+)
+
 export const StarIcon = (p: IconProps) => (
   <Base {...p}>
     <path d="M12 2.5l2.9 5.9 6.5.95-4.7 4.58 1.1 6.47L12 17.85 6.2 20.9l1.1-6.47-4.7-4.58 6.5-.95L12 2.5Z" />
