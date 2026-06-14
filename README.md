@@ -5,7 +5,7 @@ A web version of the University of Glasgow GPA calculator. It uses the Schedule 
 classification.
 
 This is a React and Vite port of the original
-[GU-GPA-Calculator](../GU-GPA-Calculator) desktop app.
+[GU-GPA-Calculator](https://github.com/Niox1337/GU-GPA-Calculator) desktop app.
 
 ## Features
 
@@ -65,8 +65,6 @@ npm run lint
 - React 19
 - TypeScript
 - Vite
-- Hand-written CSS with theme tokens
-- Inline SVG icons
 
 ## Contribute to this project
 
