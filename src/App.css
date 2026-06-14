@@ -100,6 +100,16 @@
   box-shadow: var(--shadow-md);
 }
 
+.btn--success {
+  background: linear-gradient(180deg, #2fa84f, #1f8f3f);
+  color: #fff;
+  box-shadow: var(--shadow-sm);
+}
+.btn--success:hover {
+  box-shadow: var(--shadow-md);
+  filter: brightness(1.04);
+}
+
 .btn--ghost {
   background: var(--surface);
   color: var(--text);
@@ -263,9 +273,14 @@
   color: var(--danger);
   font-weight: 500;
 }
-.add-btn {
+.add-actions {
   align-self: end;
+  display: flex;
+  gap: 0.5rem;
+}
+.add-actions .btn {
   height: 41px;
+  white-space: nowrap;
 }
 
 /* ---------- Course cards ---------- */
@@ -820,6 +835,138 @@
   }
 }
 
+/* ---------- Course search dialog ---------- */
+.search-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: clamp(1rem, 8vh, 6rem) 1rem 1rem;
+  background: rgba(8, 16, 28, 0.55);
+  backdrop-filter: blur(3px);
+  animation: fade-in 0.18s ease both;
+}
+.search-dialog {
+  width: min(560px, 100%);
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  animation: dialog-in 0.2s ease both;
+}
+.search-head {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.8rem 0.9rem;
+  border-bottom: 1px solid var(--border);
+}
+.search-head__icon {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+.search-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  font-size: 1rem;
+  padding: 0.3rem 0;
+}
+.search-input:focus-visible {
+  box-shadow: none;
+}
+.search-meta {
+  padding: 0.5rem 1rem 0;
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.search-results {
+  list-style: none;
+  margin: 0;
+  padding: 0.4rem;
+  overflow-y: auto;
+}
+.search-result {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  text-align: left;
+  padding: 0.6rem 0.7rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text);
+  transition: background 0.14s ease;
+}
+.search-result:hover,
+.search-result:focus-visible {
+  background: var(--surface-2);
+}
+.search-result__name {
+  font-weight: 600;
+  min-width: 0;
+}
+.search-result__meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+.search-result__level {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--navy);
+  background: color-mix(in srgb, var(--navy) 12%, transparent);
+  padding: 0.12rem 0.45rem;
+  border-radius: 999px;
+}
+.search-result__credit {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.search-result__code {
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  color: var(--text-muted);
+}
+.search-empty {
+  padding: 2rem 1rem;
+  text-align: center;
+  color: var(--text-muted);
+}
+.search-foot {
+  padding: 0.6rem 1rem 0.9rem;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+}
+
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 /* ---------- Responsive ---------- */
 @media (max-width: 860px) {
   .layout {
@@ -840,8 +987,11 @@
   .add-form {
     grid-template-columns: 1fr 1fr;
   }
-  .add-btn {
+  .add-actions {
     grid-column: 1 / -1;
+  }
+  .add-actions .btn {
+    flex: 1;
     justify-content: center;
   }
   .btn-text {
