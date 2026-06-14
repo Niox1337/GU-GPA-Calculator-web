@@ -149,23 +149,100 @@ export function creditDistribution(courses: Course[]): Distribution[] {
     })
 }
 
-export interface HonoursResult {
+const FIRST = 'First Class Honours'
+const UPPER = 'Upper Second Class Honours (2:1)'
+const LOWER = 'Lower Second Class Honours (2:2)'
+const THIRD = 'Third Class Honours'
+const FAIL = 'Below Honours Standard'
+
+export interface ClassResult {
+  classification: string
+  /** True when the GPA fell in a rule 16.37(d) borderline range and the profile decided it. */
+  borderline: boolean
+  /** Plain-language reason, only set for borderline cases. */
+  reason?: string
+}
+
+export interface HonoursResult extends ClassResult {
   juniorGpa: number
   seniorGpa: number
   finalGpa: number
-  classification: string
 }
 
-/** Maps a final honours GPA to a degree classification by the direct method. */
+/** One weighted entry in a degree grade profile (credit- and year-weighted). */
+export interface ProfileEntry {
+  band: string
+  weight: number
+}
+
+/** Credit-weighted grade profile for a single year (weights sum to 1). */
+export function yearProfile(courses: Course[]): ProfileEntry[] {
+  const counted = courses.filter(isCounted)
+  const total = counted.reduce((s, c) => s + Number(c.credit), 0)
+  if (!total) return []
+  return counted.map((c) => ({ band: gradeBand(c.grade), weight: Number(c.credit) / total }))
+}
+
+/** Combined honours profile: each year weighted by credit, then by year (40% / 60%). */
+export function honoursProfile(junior: Course[], senior: Course[]): ProfileEntry[] {
+  return [
+    ...yearProfile(junior).map((p) => ({ ...p, weight: p.weight * 0.4 })),
+    ...yearProfile(senior).map((p) => ({ ...p, weight: p.weight * 0.6 })),
+  ]
+}
+
+/** Share of the weighted profile at the given grade bands from 0 to 1. */
+function bandShare(profile: ProfileEntry[], bands: string[]): number {
+  const total = profile.reduce((s, p) => s + p.weight, 0)
+  if (!total) return 0
+  const inBands = profile
+    .filter((p) => bands.includes(p.band))
+    .reduce((s, p) => s + p.weight, 0)
+  return inBands / total
+}
+
+const pct = (f: number) => `${Math.round(f * 100)}%`
+
+/**
+ * Classify a final honours GPA. Clear ranges use the direct method. The four
+ * borderline ranges 17.1 to 17.4, 14.1 to 14.4, 11.1 to 11.4, and 8.1 to 8.4 are resolved by
+ * the weighted course grade profile, per University of Glasgow regulation
+ * 16.37(d). Working in tenths avoids floating-point edge cases.
+ */
+export function classifyHonours(gpa: number, profile: ProfileEntry[]): ClassResult {
+  const g = Math.round(gpa * 10)
+
+  const border = (
+    share: number,
+    bandsLabel: string,
+    high: string,
+    low: string,
+  ): ClassResult => {
+    const met = share >= 0.5
+    return {
+      classification: met ? high : low,
+      borderline: true,
+      reason: `${met ? 'at least ' : 'less than '}50% of the weighted grade profile is ${bandsLabel} (${pct(share)})`,
+    }
+  }
+
+  if (g >= 175) return { classification: FIRST, borderline: false }
+  if (g >= 171) return border(bandShare(profile, ['A']), 'at grade A', FIRST, UPPER)
+  if (g >= 145) return { classification: UPPER, borderline: false }
+  if (g >= 141) return border(bandShare(profile, ['A', 'B']), 'at grade B or above', UPPER, LOWER)
+  if (g >= 115) return { classification: LOWER, borderline: false }
+  if (g >= 111) return border(bandShare(profile, ['A', 'B', 'C']), 'at grade C or above', LOWER, THIRD)
+  if (g >= 85) return { classification: THIRD, borderline: false }
+  if (g >= 81) return border(bandShare(profile, ['A', 'B', 'C', 'D']), 'at grade D or above', THIRD, FAIL)
+  return { classification: FAIL, borderline: false }
+}
+
+/** Direct-only classification with no borderline resolution, used for rough indicators. */
 export function honoursClass(gpa: number): string {
-  if (gpa >= 17.5) return 'First Class Honours'
-  if (gpa >= 14.5) return 'Upper Second Class Honours (2:1)'
-  if (gpa >= 11.5) return 'Lower Second Class Honours (2:2)'
-  if (gpa >= 8.5) return 'Third Class Honours'
-  return 'Below Honours Standard'
+  return classifyHonours(gpa, []).classification
 }
 
-/** Combines Junior Honours at 40% and Senior Honours at 60%. */
+/** Combines Junior Honours at 40% and Senior Honours at 60%, with borderline resolution. */
 export function computeHonours(junior: Course[], senior: Course[]): HonoursResult {
   const juniorGpa = computeYear(junior).gpa
   const seniorGpa = computeYear(senior).gpa
@@ -174,7 +251,7 @@ export function computeHonours(junior: Course[], senior: Course[]): HonoursResul
     juniorGpa: Math.round(juniorGpa * 10) / 10,
     seniorGpa: Math.round(seniorGpa * 10) / 10,
     finalGpa,
-    classification: honoursClass(finalGpa),
+    ...classifyHonours(finalGpa, honoursProfile(junior, senior)),
   }
 }
 

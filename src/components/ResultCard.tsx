@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { Course } from '../lib/gpa'
-import { computeYear, creditDistribution, honoursClass } from '../lib/gpa'
+import { classifyHonours, computeYear, creditDistribution, yearProfile } from '../lib/gpa'
 import { ChevronIcon } from './Icons'
 
 interface Props {
@@ -14,6 +14,7 @@ export default function ResultCard({ courses }: Props) {
   const result = computeYear(courses)
   const distribution = creditDistribution(courses)
   const hasData = result.countedCount > 0
+  const honours = classifyHonours(result.gpa1dp, yearProfile(courses))
 
   return (
     <div className="result-card" aria-live="polite">
@@ -40,7 +41,14 @@ export default function ResultCard({ courses }: Props) {
         </div>
         <div className="stat stat--wide">
           <dt>Honours equivalent</dt>
-          <dd className="stat--muted">{hasData ? honoursClass(result.gpa1dp) : '-'}</dd>
+          <dd className="stat--muted">
+            {hasData ? honours.classification : '-'}
+            {hasData && honours.borderline && (
+              <span className="border-tag" title={honours.reason}>
+                borderline
+              </span>
+            )}
+          </dd>
         </div>
       </dl>
 

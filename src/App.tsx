@@ -81,6 +81,12 @@ function HonoursSummary({ junior, senior }: { junior: Course[]; senior: Course[]
         <GraduationIcon width={22} height={22} />
         <span>{ready ? r.classification : 'Add grades to see your degree classification'}</span>
       </div>
+      {ready && r.borderline && (
+        <p className="border-note">
+          <strong>Borderline rule 16.37(d):</strong> a GPA of {r.finalGpa.toFixed(1)} falls between
+          two bands, so the classification is set by the weighted grade profile, {r.reason}.
+        </p>
+      )}
     </div>
   )
 }

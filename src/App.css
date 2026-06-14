@@ -669,6 +669,33 @@
   background: var(--surface-2);
   border-color: var(--border);
 }
+.border-note {
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--band-c);
+  border-radius: var(--radius-sm);
+  padding: 0.7rem 0.85rem;
+}
+.border-note strong {
+  color: var(--text);
+}
+.border-tag {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.66rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #fff;
+  background: var(--band-d);
+  vertical-align: middle;
+  cursor: help;
+}
 
 /* ---------- Star on GitHub CTA ---------- */
 .star-cta {
