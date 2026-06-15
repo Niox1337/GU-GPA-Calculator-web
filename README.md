@@ -1,8 +1,8 @@
 # Glasgow GPA Calculator
 
 A web version of the University of Glasgow GPA calculator. It uses the Schedule A
-22-point scale and can calculate either a single-year GPA or an honours degree
-classification.
+22-point scale and can calculate a single-year GPA, Honours classification,
+Joint Honours classification, or Integrated Masters classification.
 
 This is a React and Vite port of the original
 [GU-GPA-Calculator](https://github.com/Niox1337/GU-GPA-Calculator) desktop app.
@@ -11,12 +11,12 @@ This is a React and Vite port of the original
 
 - Add courses with names, credits, and Schedule A grades
 - Calculate a credit-weighted GPA on the 22-point scale
-- Combine Junior Honours at 40% and Senior Honours at 60%
+- Combine degree years with editable weights for Honours and Integrated Masters
+- Combine two Joint Honours subjects with editable subject and year weights
 - Expand the calculation to see each course's points, weight, and contribution
 - See a simple credit distribution by grade band
 - Save courses, theme, and calculator mode in `localStorage`
-- Import and export all courses as a portable JSON file (forgiving import skips
-  blank rows and resets unknown grades to "not taken")
+- Import and export all course lists and degree weights as a portable JSON file
 - Switch between light and dark mode
 
 ## How it works
@@ -27,6 +27,17 @@ are ignored, so they do not affect the total credits or the GPA.
 The app rounds the GPA to one decimal place and maps the rounded point value back
 to the nearest Schedule A grade. The calculation follows the original Rust
 backend. One checked case from that app is 360 credits giving `C1 13.7`.
+
+Degree classification mode supports the standard two-year Honours shape, a
+two-subject Joint Honours shape, and a three-year Integrated Masters shape. The
+default weights are 40 and 60 for Honours, 50 and 50 for Joint Honours subjects,
+and 20, 30, and 50 for Integrated Masters. If you change the weights, the final
+GPA is normalised to the total you enter.
+
+Import is forgiving. Blank rows are skipped, unknown grades are reset to "not
+taken", and older files that used Junior and Senior Honours lists still load.
+Exports include single-year courses, Honours years, Joint Honours subjects, and
+Integrated Masters years.
 
 ## Getting started
 
