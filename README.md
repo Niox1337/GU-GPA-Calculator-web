@@ -7,6 +7,8 @@ Joint Honours classification, or Integrated Masters classification.
 This is a React and Vite port of the original
 [GU-GPA-Calculator](https://github.com/Niox1337/GU-GPA-Calculator) desktop app.
 
+Deployed at https://zhixiangfeng.com/tools/gu-gpa-calculator/
+
 ## Features
 
 - Add courses with names, credits, and Schedule A grades
