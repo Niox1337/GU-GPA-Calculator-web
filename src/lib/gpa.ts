@@ -336,6 +336,38 @@ export function classifyPGT(courses: Course[]): ClassResult {
   return { classification: PASS, borderline: false }
 }
 
+export interface DegreeResult extends ClassResult {
+  yearGpas: number[]
+  finalGpa: number
+}
+
+/** Combined weighted grade profile across years: each year is credit-weighted, then scaled by its programme weight. */
+export function degreeProfile(years: Course[][], weights: number[]): ProfileEntry[] {
+  const totalWeight = weights.reduce((s, w) => s + w, 0) || 1
+  return years.flatMap((courses, i) =>
+    yearProfile(courses).map((p) => ({
+      ...p,
+      weight: (p.weight * (weights[i] ?? 0)) / totalWeight,
+    })),
+  )
+}
+
+/**
+ * Generic multi-year degree classification (Honours, Integrated Masters, …).
+ * The final GPA is the year GPAs combined by the given weights (normalised to
+ * their total), then classified with §16.37(d) borderline resolution.
+ */
+export function computeDegree(years: Course[][], weights: number[]): DegreeResult {
+  const totalWeight = weights.reduce((s, w) => s + w, 0) || 1
+  const yearGpas = years.map((y) => computeYear(y).gpa)
+  const finalRaw = yearGpas.reduce((s, g, i) => s + g * (weights[i] ?? 0), 0) / totalWeight
+  return {
+    yearGpas: yearGpas.map((g) => Math.round(g * 10) / 10),
+    finalGpa: Math.round(finalRaw * 10) / 10,
+    ...classifyHonours(Math.round(finalRaw * 10) / 10, degreeProfile(years, weights)),
+  }
+}
+
 // Example Senior Honours year for Computing Science.
 // Course titles and credit weights follow the UofG catalogue pattern.
 export const EXAMPLE_COURSES: Omit<Course, 'id'>[] = [
