@@ -1,14 +1,20 @@
-// Import and export of grade data. Exports a portable JSON snapshot of all three
-// datasets. Imports forgivingly, unknown grades are dropped to "not taken" and
-// blank rows are skipped, so hand-edited or partial files still load cleanly.
+// Import and export of grade data. Exports a portable JSON snapshot of every
+// dataset (single year, plus the Honours and Integrated Masters years and their
+// weights). Imports forgivingly: unknown grades drop to "not taken", blank rows
+// are skipped, and older files using junior/senior still load.
 import type { Course } from './gpa'
 import { GRADES } from './gpa'
 
 export interface DataBundle {
   year: Course[]
-  junior: Course[]
-  senior: Course[]
+  honoursYears: Course[][]
+  honoursWeights: number[]
+  imYears: Course[][]
+  imWeights: number[]
 }
+
+export const DEFAULT_HONOURS_WEIGHTS = [40, 60]
+export const DEFAULT_IM_WEIGHTS = [20, 30, 50]
 
 const APP_TAG = 'glasgow-gpa-calculator'
 const VALID_GRADES = new Set(GRADES)
@@ -42,6 +48,19 @@ function coerceList(raw: unknown): Course[] {
   return raw.map(coerceCourse).filter((c): c is Course => c !== null)
 }
 
+function coerceMatrix(raw: unknown, years: number): Course[][] {
+  const arr = Array.isArray(raw) ? raw : []
+  return Array.from({ length: years }, (_, i) => coerceList(arr[i]))
+}
+
+function coerceWeights(raw: unknown, fallback: number[]): number[] {
+  const arr = Array.isArray(raw) ? raw : []
+  return fallback.map((d, i) => {
+    const v = Number(arr[i])
+    return Number.isFinite(v) && v >= 0 ? v : d
+  })
+}
+
 const strip = (c: Course) => ({ name: c.name, credit: c.credit, grade: c.grade })
 
 /** Serialise the full dataset to a pretty-printed, versioned JSON string. */
@@ -49,12 +68,14 @@ export function buildExport(bundle: DataBundle): string {
   return JSON.stringify(
     {
       app: APP_TAG,
-      version: 1,
+      version: 2,
       exportedAt: new Date().toISOString(),
       data: {
         year: bundle.year.map(strip),
-        junior: bundle.junior.map(strip),
-        senior: bundle.senior.map(strip),
+        honoursYears: bundle.honoursYears.map((y) => y.map(strip)),
+        honoursWeights: bundle.honoursWeights,
+        imYears: bundle.imYears.map((y) => y.map(strip)),
+        imWeights: bundle.imWeights,
       },
     },
     null,
@@ -62,10 +83,27 @@ export function buildExport(bundle: DataBundle): string {
   )
 }
 
+/** Total number of courses across every dataset in a bundle. */
+export function bundleCount(b: DataBundle): number {
+  return (
+    b.year.length +
+    b.honoursYears.reduce((n, y) => n + y.length, 0) +
+    b.imYears.reduce((n, y) => n + y.length, 0)
+  )
+}
+
+const emptyBundle = (): DataBundle => ({
+  year: [],
+  honoursYears: [[], []],
+  honoursWeights: [...DEFAULT_HONOURS_WEIGHTS],
+  imYears: [[], [], []],
+  imWeights: [...DEFAULT_IM_WEIGHTS],
+})
+
 /**
- * Parse an exported (or hand-made) file. Accepts the full `{ data: {...} }`
- * bundle, a bare `{ year, junior, senior }` object, or a plain array of courses
- * (treated as the single-year list). Throws a user-friendly error otherwise.
+ * Parse an exported (or hand-made) file. Accepts the current bundle, a bare
+ * array of courses (treated as the single year), or an older file that used
+ * `junior`/`senior` (mapped onto the Honours years).
  */
 export function parseImport(text: string): DataBundle {
   let parsed: unknown
@@ -75,21 +113,27 @@ export function parseImport(text: string): DataBundle {
     throw new Error('That file is not valid JSON.')
   }
 
+  const bundle = emptyBundle()
+
   if (Array.isArray(parsed)) {
-    const year = coerceList(parsed)
-    if (!year.length) throw new Error('No courses found in that file.')
-    return { year, junior: [], senior: [] }
+    bundle.year = coerceList(parsed)
+  } else {
+    const root = (parsed ?? {}) as Record<string, unknown>
+    const data = (root.data ?? root) as Record<string, unknown>
+
+    bundle.year = coerceList(data.year)
+    if (data.honoursYears !== undefined || data.junior !== undefined) {
+      bundle.honoursYears =
+        data.honoursYears !== undefined
+          ? coerceMatrix(data.honoursYears, 2)
+          : [coerceList(data.junior), coerceList(data.senior)]
+    }
+    bundle.honoursWeights = coerceWeights(data.honoursWeights, DEFAULT_HONOURS_WEIGHTS)
+    bundle.imYears = coerceMatrix(data.imYears, 3)
+    bundle.imWeights = coerceWeights(data.imWeights, DEFAULT_IM_WEIGHTS)
   }
 
-  const root = (parsed ?? {}) as Record<string, unknown>
-  const data = (root.data ?? root) as Record<string, unknown>
-  const bundle: DataBundle = {
-    year: coerceList(data.year),
-    junior: coerceList(data.junior),
-    senior: coerceList(data.senior),
-  }
-
-  if (bundle.year.length + bundle.junior.length + bundle.senior.length === 0) {
+  if (bundleCount(bundle) === 0) {
     throw new Error('No courses found in that file.')
   }
   return bundle
