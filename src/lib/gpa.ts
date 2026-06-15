@@ -352,19 +352,62 @@ export function degreeProfile(years: Course[][], weights: number[]): ProfileEntr
   )
 }
 
+/** Unrounded weighted average of several year GPAs (weights normalised to their total). */
+function weightedYearGpa(years: Course[][], weights: number[]): number {
+  const totalWeight = weights.reduce((s, w) => s + w, 0) || 1
+  return years.reduce((s, y, i) => s + computeYear(y).gpa * (weights[i] ?? 0), 0) / totalWeight
+}
+
 /**
  * Generic multi-year degree classification (Honours, Integrated Masters, …).
  * The final GPA is the year GPAs combined by the given weights (normalised to
  * their total), then classified with §16.37(d) borderline resolution.
  */
 export function computeDegree(years: Course[][], weights: number[]): DegreeResult {
-  const totalWeight = weights.reduce((s, w) => s + w, 0) || 1
-  const yearGpas = years.map((y) => computeYear(y).gpa)
-  const finalRaw = yearGpas.reduce((s, g, i) => s + g * (weights[i] ?? 0), 0) / totalWeight
+  const finalGpa = Math.round(weightedYearGpa(years, weights) * 10) / 10
   return {
-    yearGpas: yearGpas.map((g) => Math.round(g * 10) / 10),
-    finalGpa: Math.round(finalRaw * 10) / 10,
-    ...classifyHonours(Math.round(finalRaw * 10) / 10, degreeProfile(years, weights)),
+    yearGpas: years.map((y) => Math.round(computeYear(y).gpa * 10) / 10),
+    finalGpa,
+    ...classifyHonours(finalGpa, degreeProfile(years, weights)),
+  }
+}
+
+export interface JointSubject {
+  name: string
+  years: Course[][]
+  yearWeights: number[]
+}
+
+export interface JointResult extends ClassResult {
+  subjectGpas: number[]
+  finalGpa: number
+}
+
+/** Combined grade profile across joint-honours subjects: year-weighted within each subject, then subject-weighted. */
+export function jointProfile(subjects: JointSubject[], subjectWeights: number[]): ProfileEntry[] {
+  const totalWeight = subjectWeights.reduce((s, w) => s + w, 0) || 1
+  return subjects.flatMap((subject, i) =>
+    degreeProfile(subject.years, subject.yearWeights).map((p) => ({
+      ...p,
+      weight: (p.weight * (subjectWeights[i] ?? 0)) / totalWeight,
+    })),
+  )
+}
+
+/**
+ * Joint Honours: each subject is aggregated over its own years (with its own
+ * year weights), then the subject GPAs are aggregated, usually 50:50. The final
+ * joint GPA is classified with §16.37(d) borderline resolution.
+ */
+export function computeJoint(subjects: JointSubject[], subjectWeights: number[]): JointResult {
+  const totalWeight = subjectWeights.reduce((s, w) => s + w, 0) || 1
+  const subjectGpasRaw = subjects.map((s) => weightedYearGpa(s.years, s.yearWeights))
+  const finalRaw = subjectGpasRaw.reduce((s, g, i) => s + g * (subjectWeights[i] ?? 0), 0) / totalWeight
+  const finalGpa = Math.round(finalRaw * 10) / 10
+  return {
+    subjectGpas: subjectGpasRaw.map((g) => Math.round(g * 10) / 10),
+    finalGpa,
+    ...classifyHonours(finalGpa, jointProfile(subjects, subjectWeights)),
   }
 }
 

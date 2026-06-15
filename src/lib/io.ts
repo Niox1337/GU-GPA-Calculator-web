@@ -2,19 +2,27 @@
 // dataset (single year, plus the Honours and Integrated Masters years and their
 // weights). Imports forgivingly: unknown grades drop to "not taken", blank rows
 // are skipped, and older files using junior/senior still load.
-import type { Course } from './gpa'
+import type { Course, JointSubject } from './gpa'
 import { GRADES } from './gpa'
 
 export interface DataBundle {
   year: Course[]
   honoursYears: Course[][]
   honoursWeights: number[]
+  jointSubjects: JointSubject[]
+  jointSubjectWeights: number[]
   imYears: Course[][]
   imWeights: number[]
 }
 
 export const DEFAULT_HONOURS_WEIGHTS = [40, 60]
 export const DEFAULT_IM_WEIGHTS = [20, 30, 50]
+export const DEFAULT_SUBJECT_WEIGHTS = [50, 50]
+
+export const makeDefaultJointSubjects = (): JointSubject[] => [
+  { name: 'Subject X', years: [[], []], yearWeights: [...DEFAULT_HONOURS_WEIGHTS] },
+  { name: 'Subject Y', years: [[], []], yearWeights: [...DEFAULT_HONOURS_WEIGHTS] },
+]
 
 const APP_TAG = 'glasgow-gpa-calculator'
 const VALID_GRADES = new Set(GRADES)
@@ -61,6 +69,21 @@ function coerceWeights(raw: unknown, fallback: number[]): number[] {
   })
 }
 
+function coerceSubject(raw: unknown, fallbackName: string): JointSubject {
+  const r = raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : {}
+  const name = typeof r.name === 'string' && r.name.trim() ? r.name.trim() : fallbackName
+  return {
+    name,
+    years: coerceMatrix(r.years, 2),
+    yearWeights: coerceWeights(r.yearWeights, DEFAULT_HONOURS_WEIGHTS),
+  }
+}
+
+function coerceSubjects(raw: unknown): JointSubject[] {
+  const arr = Array.isArray(raw) ? raw : []
+  return [coerceSubject(arr[0], 'Subject X'), coerceSubject(arr[1], 'Subject Y')]
+}
+
 const strip = (c: Course) => ({ name: c.name, credit: c.credit, grade: c.grade })
 
 /** Serialise the full dataset to a pretty-printed, versioned JSON string. */
@@ -74,6 +97,12 @@ export function buildExport(bundle: DataBundle): string {
         year: bundle.year.map(strip),
         honoursYears: bundle.honoursYears.map((y) => y.map(strip)),
         honoursWeights: bundle.honoursWeights,
+        jointSubjects: bundle.jointSubjects.map((s) => ({
+          name: s.name,
+          years: s.years.map((y) => y.map(strip)),
+          yearWeights: s.yearWeights,
+        })),
+        jointSubjectWeights: bundle.jointSubjectWeights,
         imYears: bundle.imYears.map((y) => y.map(strip)),
         imWeights: bundle.imWeights,
       },
@@ -88,6 +117,7 @@ export function bundleCount(b: DataBundle): number {
   return (
     b.year.length +
     b.honoursYears.reduce((n, y) => n + y.length, 0) +
+    b.jointSubjects.reduce((n, s) => n + s.years.reduce((m, y) => m + y.length, 0), 0) +
     b.imYears.reduce((n, y) => n + y.length, 0)
   )
 }
@@ -96,6 +126,8 @@ const emptyBundle = (): DataBundle => ({
   year: [],
   honoursYears: [[], []],
   honoursWeights: [...DEFAULT_HONOURS_WEIGHTS],
+  jointSubjects: makeDefaultJointSubjects(),
+  jointSubjectWeights: [...DEFAULT_SUBJECT_WEIGHTS],
   imYears: [[], [], []],
   imWeights: [...DEFAULT_IM_WEIGHTS],
 })
@@ -129,6 +161,10 @@ export function parseImport(text: string): DataBundle {
           : [coerceList(data.junior), coerceList(data.senior)]
     }
     bundle.honoursWeights = coerceWeights(data.honoursWeights, DEFAULT_HONOURS_WEIGHTS)
+    if (data.jointSubjects !== undefined) {
+      bundle.jointSubjects = coerceSubjects(data.jointSubjects)
+    }
+    bundle.jointSubjectWeights = coerceWeights(data.jointSubjectWeights, DEFAULT_SUBJECT_WEIGHTS)
     bundle.imYears = coerceMatrix(data.imYears, 3)
     bundle.imWeights = coerceWeights(data.imWeights, DEFAULT_IM_WEIGHTS)
   }
