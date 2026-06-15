@@ -676,6 +676,61 @@
   gap: 1.25rem;
   align-items: start;
 }
+
+/* Joint Honours: one card per subject, each holding its Honours years. */
+.joint-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.25rem;
+  align-items: start;
+}
+.joint-subject-head {
+  gap: 0.6rem;
+}
+.subject-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  padding: 0.3rem 0.45rem;
+  transition: border-color 0.18s ease, background 0.18s ease;
+}
+.subject-name:hover {
+  border-color: var(--border);
+}
+.subject-name:focus-visible {
+  border-color: var(--accent);
+  background: var(--surface-2);
+}
+.weight-prefix {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.joint-year + .joint-year {
+  margin-top: 1.1rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid var(--border);
+}
+.joint-year-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  margin-bottom: 0.8rem;
+}
+.joint-year-head h3 {
+  font-size: 0.92rem;
+  font-weight: 650;
+  color: var(--text-muted);
+}
+.joint-year .courses {
+  grid-template-columns: 1fr;
+}
 .honours-grid .courses {
   grid-template-columns: 1fr;
 }
