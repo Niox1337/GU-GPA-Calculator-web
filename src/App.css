@@ -232,9 +232,14 @@
 }
 
 /* ---------- Add form ---------- */
+.course-list {
+  container-type: inline-size;
+}
+
+/* Base narrow container keeps everything stacked so nothing is compressed. */
 .add-form {
   display: grid;
-  grid-template-columns: 1fr 120px auto;
+  grid-template-columns: 1fr;
   gap: 0.7rem;
   align-items: start;
   padding: 1rem;
@@ -242,6 +247,20 @@
   border: 1px solid var(--border);
   border-radius: var(--radius);
   margin-bottom: 1.1rem;
+}
+
+/* Medium container lets name and credits share a row while buttons drop below. */
+@container (min-width: 360px) {
+  .add-form {
+    grid-template-columns: 1fr 110px;
+  }
+}
+
+/* Wide container used by the single-year panel keeps everything on one row. */
+@container (min-width: 560px) {
+  .add-form {
+    grid-template-columns: 1fr 120px auto;
+  }
 }
 .field {
   display: flex;
@@ -273,14 +292,26 @@
   color: var(--danger);
   font-weight: 500;
 }
+/* Buttons span the full width and share the row until the container is wide. */
 .add-actions {
-  align-self: end;
+  grid-column: 1 / -1;
   display: flex;
   gap: 0.5rem;
 }
 .add-actions .btn {
+  flex: 1;
+  justify-content: center;
   height: 41px;
   white-space: nowrap;
+}
+@container (min-width: 560px) {
+  .add-actions {
+    grid-column: auto;
+    align-self: end;
+  }
+  .add-actions .btn {
+    flex: 0 0 auto;
+  }
 }
 
 /* ---------- Course cards ---------- */
@@ -1163,16 +1194,6 @@
 @media (max-width: 560px) {
   .courses {
     grid-template-columns: 1fr;
-  }
-  .add-form {
-    grid-template-columns: 1fr 1fr;
-  }
-  .add-actions {
-    grid-column: 1 / -1;
-  }
-  .add-actions .btn {
-    flex: 1;
-    justify-content: center;
   }
   .btn-text {
     display: none;
