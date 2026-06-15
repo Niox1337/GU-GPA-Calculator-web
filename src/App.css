@@ -252,14 +252,14 @@
 /* Medium container lets name and credits share a row while buttons drop below. */
 @container (min-width: 360px) {
   .add-form {
-    grid-template-columns: 1fr 110px;
+    grid-template-columns: 1fr 84px;
   }
 }
 
 /* Wide container used by the single-year panel keeps everything on one row. */
 @container (min-width: 560px) {
   .add-form {
-    grid-template-columns: 1fr 120px auto;
+    grid-template-columns: 1fr 84px auto;
   }
 }
 .field {
@@ -319,7 +319,8 @@
   list-style: none;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  /* Cards stay wide enough for full course names and split only in wide panels. */
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
   gap: 0.7rem;
 }
 .course-card {
@@ -346,6 +347,7 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
+  flex: 1;
 }
 .course-name {
   font-weight: 650;

@@ -178,7 +178,7 @@ export default function CourseList({ courses, onChange, idPrefix }: Props) {
         <div className="add-actions">
           <button type="submit" className="btn btn--primary">
             <PlusIcon width={18} height={18} />
-            Add course
+            Add
           </button>
           <button
             type="button"
@@ -186,7 +186,7 @@ export default function CourseList({ courses, onChange, idPrefix }: Props) {
             onClick={() => setSearchOpen(true)}
           >
             <SearchIcon width={18} height={18} />
-            Search course
+            Search
           </button>
         </div>
       </form>
