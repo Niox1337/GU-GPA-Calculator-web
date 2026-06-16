@@ -16,14 +16,8 @@ interface Props {
   courses: Course[];
   onChange: (courses: Course[]) => void;
   idPrefix: string;
-  /** Restrict the catalogue search to the courses that match this predicate. */
-  catalogueFilter?: (course: CatalogueCourse) => boolean;
-  /** Hide the manual add form so courses can only be picked from the catalogue. */
-  catalogueOnly?: boolean;
-  /** Label for the catalogue-only add button. */
-  pickLabel?: string;
-  /** Helper text shown under the catalogue-only add button. */
-  pickHint?: string;
+  /** Fixed list: hide the add form, search, and remove buttons; grades only. */
+  fixed?: boolean;
 }
 
 type Tree = typeof CATALOGUE_TREE;
@@ -57,10 +51,7 @@ export default function CourseList({
   courses,
   onChange,
   idPrefix,
-  catalogueFilter,
-  catalogueOnly = false,
-  pickLabel = "Add a course",
-  pickHint,
+  fixed = false,
 }: Props) {
   const [name, setName] = useState("");
   const [credit, setCredit] = useState("");
@@ -94,23 +85,8 @@ export default function CourseList({
   }
 
   // Picking a catalogue course fills the name and its standard credit value.
-  // The user can adjust the credits before adding. In catalogue-only mode there
-  // is no form to fill, so the picked course is added straight to the list.
+  // The user can adjust the credits before adding.
   function pickCourse(course: CatalogueCourse) {
-    if (catalogueOnly) {
-      onChange([
-        ...courses,
-        {
-          id: newId(),
-          name: course.name,
-          credit: String(course.credit),
-          grade: "",
-        },
-      ]);
-      setSearchOpen(false);
-      setQuery("");
-      return;
-    }
     setName(course.name);
     setCredit(String(course.credit));
     setErrors({});
@@ -145,19 +121,15 @@ export default function CourseList({
     });
   }
 
-  // Restrict to the allowed courses first, then filter by name or code.
-  // An active query auto-expands matching groups.
-  const base = catalogueFilter
-    ? filterTree(CATALOGUE_TREE, catalogueFilter)
-    : CATALOGUE_TREE;
+  // Filter by course name or code. An active query auto-expands matching groups.
   const q = query.trim().toLowerCase();
   const tree = q
     ? filterTree(
-        base,
+        CATALOGUE_TREE,
         (c) =>
           c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q),
       )
-    : base;
+    : CATALOGUE_TREE;
 
   const totalResults = tree.reduce((n, s) => n + s.total, 0);
   const isSchoolOpen = (school: string) => q !== "" || openSchools.has(school);
@@ -165,19 +137,7 @@ export default function CourseList({
 
   return (
     <div className="course-list">
-      {catalogueOnly ? (
-        <div className="add-form add-form--locked">
-          <button
-            type="button"
-            className="btn btn--success btn--block"
-            onClick={() => setSearchOpen(true)}
-          >
-            <SearchIcon width={18} height={18} />
-            {pickLabel}
-          </button>
-          {pickHint && <p className="add-hint">{pickHint}</p>}
-        </div>
-      ) : (
+      {!fixed && (
         <form className="add-form" onSubmit={addCourse} noValidate>
         <div className="field">
           <label htmlFor={`${idPrefix}-name`}>Course name</label>
@@ -246,9 +206,8 @@ export default function CourseList({
         <div className="empty-state">
           <p className="empty-title">No courses yet</p>
           <p className="empty-sub">
-            {catalogueOnly
-              ? "Add your Level 2 computing courses above, then pick each Schedule A grade to see your GPA update instantly."
-              : "Add your courses above, then pick each Schedule A grade to see your GPA update instantly."}
+            Add your courses above, then pick each Schedule A grade to see your
+            GPA update instantly.
           </p>
         </div>
       ) : (
@@ -288,15 +247,17 @@ export default function CourseList({
                       </option>
                     ))}
                   </select>
-                  <button
-                    type="button"
-                    className="icon-btn icon-btn--danger"
-                    onClick={() => remove(c.id)}
-                    aria-label={`Remove ${c.name}`}
-                    title={`Remove ${c.name}`}
-                  >
-                    <TrashIcon width={18} height={18} />
-                  </button>
+                  {!fixed && (
+                    <button
+                      type="button"
+                      className="icon-btn icon-btn--danger"
+                      onClick={() => remove(c.id)}
+                      aria-label={`Remove ${c.name}`}
+                      title={`Remove ${c.name}`}
+                    >
+                      <TrashIcon width={18} height={18} />
+                    </button>
+                  )}
                 </div>
               </li>
             );

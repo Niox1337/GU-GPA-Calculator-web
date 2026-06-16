@@ -456,7 +456,29 @@ export function creditsAtOrAbove(courses: Course[], minPoint: number): number {
     .reduce((s, c) => s + Number(c.credit), 0)
 }
 
-export type ProgressionTarget = 'l1' | 'l2' | 'cs-honours'
+export type ProgressionTarget = 'l1' | 'l2' | 'bsc' | 'msci' | 'cs-honours'
+
+// School of Computing Science Level 3 entry programmes. Each sets the GPA
+// threshold, the credit base it is measured over, and whether resits count.
+// Source: SoCS "Introduction to Computing Science Honours" entry requirements.
+export type CsDegree = 'csh' | 'eseh' | 'combined' | 'designated'
+
+interface CsEntrySpec {
+  threshold: number
+  credits: number
+  firstAttempt: boolean
+}
+
+const CS_SPECS: Record<CsDegree, CsEntrySpec> = {
+  // CSH/M, SEH/M, SEYPM: 12.0 over all 6 Level 2 computing courses (60 credits).
+  csh: { threshold: C3_POINTS, credits: 60, firstAttempt: true },
+  // ESEH: 12.0 over the 5 prerequisite Level 2 computing courses (50 credits).
+  eseh: { threshold: C3_POINTS, credits: 50, firstAttempt: true },
+  // CSH/M+ (combined): 12.0 over 40 credits including ADS2, IOOP2 and OOSE2.
+  combined: { threshold: C3_POINTS, credits: 40, firstAttempt: true },
+  // CS, CS+ (designated): 9.0 over Level 2 computing courses, resits allowed.
+  designated: { threshold: D3_POINTS, credits: 60, firstAttempt: false },
+}
 
 export interface Requirement {
   label: string
@@ -472,67 +494,123 @@ export interface ProgressionResult {
   requirements: Requirement[]
 }
 
+/** A "GPA of at least X over the best N credits" requirement. */
+function gpaRequirement(courses: Course[], n: number, threshold: number): Requirement {
+  const best = bestCreditsGpa(courses, n)
+  const gpa = round1(best.gpa)
+  return {
+    label: `GPA of at least ${threshold.toFixed(1)} across the best ${n} credits`,
+    met: best.credits >= n && gpa >= threshold,
+    detail:
+      best.credits >= n
+        ? `GPA ${gpa.toFixed(1)} over the best ${n} credits`
+        : `Only ${best.credits} of ${n} credits available`,
+  }
+}
+
+/** A "have at least N credits" requirement. */
+function creditRequirement(totalCredit: number, n: number, noun = 'credits'): Requirement {
+  return {
+    label: `At least ${n} ${noun}`,
+    met: totalCredit >= n,
+    detail: `${totalCredit} ${noun} entered`,
+  }
+}
+
+/** A "N credits at D3 or above" requirement. */
+function d3Requirement(courses: Course[], n: number): Requirement {
+  const d3plus = creditsAtOrAbove(courses, D3_POINTS)
+  return {
+    label: `${n} credits at D3 or better`,
+    met: d3plus >= n,
+    detail: `${d3plus} credits at D3 or above`,
+  }
+}
+
 /**
- * Evaluate a student's courses against the minimum progression requirements for
- * the chosen target. Each requirement is reported separately so the UI can show
- * a per-rule checklist. The general Science checks (`l1`, `l2`) need 80 credits,
- * a GPA of at least 8 over the best 80 credits, and 60 credits at D3 or better.
- * `cs-honours` adds the School of Computing Science rule: a GPA of at least 12
- * (C3) over 60 credits of Level 2 computing courses at first attempt.
+ * Evaluate a student's courses against the College of Science & Engineering and
+ * School of Computing Science Level 3 entry rules for the chosen target,
+ * reporting each rule separately so the UI can show a per-rule checklist.
+ *
+ * - `l1`/`l2` apply the within-level §3.1 rule: 80 credits, GPA of at least 8.0
+ *   over the best 80 credits, and 60 credits at D3 or above.
+ * - `bsc` applies the §15.1 Honours admission rule: 240 credits at GPA 9.0 and
+ *   200 credits at D3 or above.
+ * - `msci` applies the MSci admission rule: 240 credits at GPA 12.0 and 200
+ *   credits at D3 or above.
+ * - `cs-honours` applies the School of Computing Science entry rule for the
+ *   given `csDegree`: a GPA over the Level 2 computing courses at first attempt
+ *   (12.0 for Honours/MSci programmes, 9.0 for Designated).
  */
-export function checkProgression(target: ProgressionTarget, courses: Course[]): ProgressionResult {
+export function checkProgression(
+  target: ProgressionTarget,
+  courses: Course[],
+  csDegree: CsDegree = 'csh',
+): ProgressionResult {
   const counted = courses.filter(isCounted)
   const totalCredit = counted.reduce((s, c) => s + Number(c.credit), 0)
   const ready = counted.length > 0
 
   let requirements: Requirement[]
 
-  if (target === 'cs-honours') {
-    const best60 = bestCreditsGpa(counted, 60)
-    const gpa60 = round1(best60.gpa)
-    requirements = [
-      {
-        label: 'At least 60 credits of Level 2 computing courses',
-        met: totalCredit >= 60,
-        detail: `${totalCredit} credits entered`,
-      },
-      {
-        label: 'GPA of at least 12 (C3) over 60 credits at first attempt',
-        met: best60.credits >= 60 && gpa60 >= C3_POINTS,
-        detail:
-          best60.credits >= 60
-            ? `GPA ${gpa60.toFixed(1)} over the best 60 credits`
-            : `Only ${best60.credits} credits available`,
-      },
-    ]
-  } else {
-    const best80 = bestCreditsGpa(counted, 80)
-    const gpa80 = round1(best80.gpa)
-    const d3plus = creditsAtOrAbove(counted, D3_POINTS)
-    requirements = [
-      {
-        label: 'At least 80 credits',
-        met: totalCredit >= 80,
-        detail: `${totalCredit} credits entered`,
-      },
-      {
-        label: 'GPA of at least 8 across the best 80 credits',
-        met: best80.credits >= 80 && gpa80 >= 8,
-        detail:
-          best80.credits >= 80
-            ? `GPA ${gpa80.toFixed(1)} over the best 80 credits`
-            : `Only ${best80.credits} credits available`,
-      },
-      {
-        label: '60 credits at D3 or better',
-        met: d3plus >= 60,
-        detail: `${d3plus} credits at D3 or above`,
-      },
-    ]
+  switch (target) {
+    case 'cs-honours': {
+      const spec = CS_SPECS[csDegree]
+      const best = bestCreditsGpa(counted, spec.credits)
+      const gpa = round1(best.gpa)
+      const firstAttempt = spec.firstAttempt ? ' at first attempt' : ''
+      requirements = [
+        creditRequirement(totalCredit, spec.credits, 'credits of Level 2 computing courses'),
+        {
+          label: `GPA of at least ${spec.threshold.toFixed(1)} (${pointToGrade(
+            spec.threshold,
+          )}) over ${spec.credits} credits${firstAttempt}`,
+          met: best.credits >= spec.credits && gpa >= spec.threshold,
+          detail:
+            best.credits >= spec.credits
+              ? `GPA ${gpa.toFixed(1)} over the best ${spec.credits} credits`
+              : `Only ${best.credits} of ${spec.credits} credits available`,
+        },
+      ]
+      break
+    }
+    case 'bsc':
+      requirements = [
+        creditRequirement(totalCredit, 240),
+        gpaRequirement(counted, 240, 9),
+        d3Requirement(counted, 200),
+      ]
+      break
+    case 'msci':
+      requirements = [
+        creditRequirement(totalCredit, 240),
+        gpaRequirement(counted, 240, 12),
+        d3Requirement(counted, 200),
+      ]
+      break
+    case 'l1':
+    case 'l2':
+    default:
+      requirements = [
+        creditRequirement(totalCredit, 80),
+        gpaRequirement(counted, 80, 8),
+        d3Requirement(counted, 60),
+      ]
   }
 
   return { met: requirements.every((r) => r.met), ready, requirements }
 }
+
+// The six standard Level 2 Computing Science courses used for Honours entry
+// (ADS2, AF2, IOOP2, NOSE2, OOSE2 and WAD2), each 10 credits, 60 in total.
+export const CS_L2_COURSES: Omit<Course, 'id'>[] = [
+  { name: 'Algorithms & Data Structures 2', credit: '10', grade: '' },
+  { name: 'Algorithmic Foundations 2', credit: '10', grade: '' },
+  { name: 'Introduction to Object Oriented Programming', credit: '10', grade: '' },
+  { name: 'Networks and Operating Systems Essentials 2', credit: '10', grade: '' },
+  { name: 'Object-Oriented Software Engineering 2', credit: '10', grade: '' },
+  { name: 'Web Application Development 2', credit: '10', grade: '' },
+]
 
 // Example Senior Honours year for Computing Science.
 // Course titles and credit weights follow the UofG catalogue pattern.

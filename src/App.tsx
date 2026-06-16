@@ -2,8 +2,8 @@ import { Fragment, useEffect, useRef, useState } from 'react'
 import type { ChangeEvent, Dispatch, SetStateAction } from 'react'
 import './App.css'
 import uogLogo from './assets/UoG.svg'
-import type { Course, JointSubject, ProgressionTarget } from './lib/gpa'
-import { EXAMPLE_COURSES, computeDegree, computeJoint } from './lib/gpa'
+import type { Course, CsDegree, JointSubject, ProgressionTarget } from './lib/gpa'
+import { CS_L2_COURSES, EXAMPLE_COURSES, computeDegree, computeJoint } from './lib/gpa'
 import {
   DEFAULT_HONOURS_WEIGHTS,
   DEFAULT_IM_WEIGHTS,
@@ -203,16 +203,32 @@ export default function App() {
     'gpa.progressionTarget',
     'l2',
   )
-  // Level 1->2 and Level 2->3 share one general course list; Computing Honours
-  // entry keeps its own list since it is scored on Level 2 computing courses only.
+  const [csDegree, setCsDegree] = usePersistentState<CsDegree>('gpa.csDegree', 'csh')
+  // Level 1->2 and Level 2->3 share one general course list.
   const [progressionCourses, setProgressionCourses] = usePersistentState<Course[]>(
     'gpa.progressionCourses',
     [],
   )
-  const [csHonoursCourses, setCsHonoursCourses] = usePersistentState<Course[]>(
-    'gpa.csHonoursCourses',
+  // Computing Honours shows the six fixed Level 2 courses, so only the grades
+  // are stored (keyed by course name) and the list is rebuilt from CS_L2_COURSES.
+  const [csHonoursGrades, setCsHonoursGrades] = usePersistentState<Record<string, string>>(
+    'gpa.csHonoursGrades',
+    {},
+  )
+  // BSc and MSci admission are both assessed on the full record to date, so they
+  // share one list of every qualifying course.
+  const [honoursCourses, setHonoursCourses] = usePersistentState<Course[]>(
+    'gpa.honoursCourses',
     [],
   )
+
+  const csHonoursCourses: Course[] = CS_L2_COURSES.map((c) => ({
+    ...c,
+    id: c.name,
+    grade: csHonoursGrades[c.name] ?? '',
+  }))
+  const setCsHonoursCourses = (next: Course[]) =>
+    setCsHonoursGrades(Object.fromEntries(next.map((c) => [c.name, c.grade])))
 
   const [toast, setToast] = useState<Toast | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -315,6 +331,34 @@ export default function App() {
   const degreeHasData = isJoint
     ? jointSubjects.some((s) => s.years.some((y) => y.length > 0))
     : years.some((y) => y.length > 0)
+
+  // Route each progression target to its own saved course list.
+  const isHonoursEntry = progressionTarget === 'bsc' || progressionTarget === 'msci'
+  const progCourses =
+    progressionTarget === 'cs-honours'
+      ? csHonoursCourses
+      : isHonoursEntry
+        ? honoursCourses
+        : progressionCourses
+  const setProgCourses =
+    progressionTarget === 'cs-honours'
+      ? setCsHonoursCourses
+      : isHonoursEntry
+        ? setHonoursCourses
+        : setProgressionCourses
+
+  // Copy the Computing Honours courses (with grades) into the BSc Honours list,
+  // skipping any already present by name, then switch to that tab.
+  const transferCsToBsc = () => {
+    setHonoursCourses((prev) => {
+      const existing = new Set(prev.map((c) => c.name))
+      const additions = csHonoursCourses
+        .filter((c) => !existing.has(c.name))
+        .map(({ name, credit, grade }) => ({ name, credit, grade }))
+      return [...prev, ...withIds(additions)]
+    })
+    setProgressionTarget('bsc')
+  }
 
   return (
     <div className="app">
@@ -442,8 +486,11 @@ export default function App() {
           <ProgressionCheck
             target={progressionTarget}
             onTargetChange={setProgressionTarget}
-            courses={progressionTarget === 'cs-honours' ? csHonoursCourses : progressionCourses}
-            onChange={progressionTarget === 'cs-honours' ? setCsHonoursCourses : setProgressionCourses}
+            csDegree={csDegree}
+            onCsDegreeChange={setCsDegree}
+            courses={progCourses}
+            onChange={setProgCourses}
+            onTransferToBsc={transferCsToBsc}
           />
         ) : (
           <div className="honours-layout">

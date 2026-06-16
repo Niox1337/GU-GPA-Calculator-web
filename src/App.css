@@ -653,6 +653,10 @@
   box-shadow: var(--shadow-sm);
   align-self: flex-start;
 }
+.degree-switch--wrap {
+  flex-wrap: wrap;
+  max-width: 100%;
+}
 .seg {
   border: none;
   background: transparent;
@@ -861,20 +865,31 @@
   cursor: help;
 }
 
-/* ---------- Catalogue-only add (locked picker) ---------- */
-.add-form--locked {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
 .btn--block {
   width: 100%;
   justify-content: center;
 }
-.add-hint {
-  font-size: 0.8rem;
+
+/* ---------- Programme selector (Computing Honours) ---------- */
+.programme-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  align-self: flex-start;
+  font-size: 0.85rem;
+  font-weight: 600;
   color: var(--text-muted);
-  line-height: 1.4;
+}
+.programme-field select {
+  padding: 0.5rem 0.7rem;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  color: var(--text);
+  font-weight: 600;
+}
+.programme-field select:hover {
+  border-color: var(--accent);
 }
 
 /* ---------- Progression check ---------- */
