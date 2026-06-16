@@ -2,8 +2,9 @@
 // dataset (single year, plus the Honours and Integrated Masters years and their
 // weights). Imports forgivingly: unknown grades drop to "not taken", blank rows
 // are skipped, and older files using junior/senior still load.
-import type { Course, JointSubject } from './gpa'
-import { GRADES } from './gpa'
+import type { Course } from './course'
+import type { JointSubject } from './classification'
+import { GRADES } from './grades'
 
 export interface DataBundle {
   year: Course[]
