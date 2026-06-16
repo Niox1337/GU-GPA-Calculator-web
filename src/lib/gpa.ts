@@ -456,7 +456,7 @@ export function creditsAtOrAbove(courses: Course[], minPoint: number): number {
     .reduce((s, c) => s + Number(c.credit), 0)
 }
 
-export type ProgressionTarget = 'l1' | 'l2' | 'bsc' | 'msci' | 'cs-honours'
+export type ProgressionTarget = 'l1' | 'l2' | 'bsc' | 'msci' | 'cs-honours' | 'l3' | 'l4'
 
 // School of Computing Science Level 3 entry programmes. Each sets the GPA
 // threshold, the credit base it is measured over, and whether resits count.
@@ -541,6 +541,9 @@ function d3Requirement(courses: Course[], n: number): Requirement {
  * - `cs-honours` applies the School of Computing Science entry rule for the
  *   given `csDegree`: a GPA over the Level 2 computing courses at first attempt
  *   (12.0 for Honours/MSci programmes, 9.0 for Designated).
+ * - `l3`/`l4` apply the within-Honours rule on the level GPA: BSc progression to
+ *   Level 4 needs 9.0 in Level 3; MSci progression to Level 4 and Level 5 needs
+ *   12.0 in Level 3 and Level 4 respectively.
  */
 export function checkProgression(
   target: ProgressionTarget,
@@ -552,6 +555,9 @@ export function checkProgression(
   const ready = counted.length > 0
 
   let requirements: Requirement[]
+  // When set, overrides the default "every requirement met" verdict. Used by the
+  // banded level-3 check where meeting only the BSc bar still allows progression.
+  let met: boolean | undefined
 
   switch (target) {
     case 'cs-honours': {
@@ -588,6 +594,35 @@ export function checkProgression(
         d3Requirement(counted, 200),
       ]
       break
+    case 'l3': {
+      const gpa = computeYear(counted).gpa1dp
+      requirements = [
+        {
+          label: 'GPA of at least 9.0 over Level 3 (BSc progression to Level 4)',
+          met: gpa >= 9,
+          detail: `Level 3 GPA ${gpa.toFixed(1)}`,
+        },
+        {
+          label: 'GPA of at least 12.0 over Level 3 (MSci progression to Level 4)',
+          met: gpa >= 12,
+          detail: `Level 3 GPA ${gpa.toFixed(1)}`,
+        },
+      ]
+      // BSc progression is the minimum bar; below 9.0 means switching to a designated degree.
+      met = gpa >= 9
+      break
+    }
+    case 'l4': {
+      const gpa = computeYear(counted).gpa1dp
+      requirements = [
+        {
+          label: 'GPA of at least 12.0 over Level 4 (MSci progression to Level 5)',
+          met: gpa >= 12,
+          detail: `Level 4 GPA ${gpa.toFixed(1)}`,
+        },
+      ]
+      break
+    }
     case 'l1':
     case 'l2':
     default:
@@ -598,7 +633,7 @@ export function checkProgression(
       ]
   }
 
-  return { met: requirements.every((r) => r.met), ready, requirements }
+  return { met: met ?? requirements.every((r) => r.met), ready, requirements }
 }
 
 // The six standard Level 2 Computing Science courses used for Honours entry

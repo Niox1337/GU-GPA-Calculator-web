@@ -28,6 +28,8 @@ const TARGETS: { value: ProgressionTarget; tab: string }[] = [
   { value: "bsc", tab: "BSc Honours" },
   { value: "msci", tab: "MSci entry" },
   { value: "cs-honours", tab: "Computing Honours" },
+  { value: "l3", tab: "Level 3 → 4" },
+  { value: "l4", tab: "Level 4 → 5" },
 ];
 
 // School of Computing Science Level 3 entry programmes (page 24 of the briefing).
@@ -45,6 +47,8 @@ const INTRO: Record<ProgressionTarget, string> = {
   msci: "Admission to an MSci programme. Add every Level 1 and Level 2 course taken so far, with grades.",
   "cs-honours":
     "School of Computing Science entry to Level 3. Pick your programme, then add your Level 2 computing courses at first attempt. The 6 Level 2 computing courses are ADS2, AF2, IOOP2, NOSE2, OOSE2 and WAD2 (CS1F and CS1S do not count).",
+  l3: "Progression from Level 3 to Level 4. Add your Level 3 courses and grades. BSc needs a Level 3 GPA of 9.0 and MSci needs 12.0.",
+  l4: "Progression from Level 4 to Level 5, for MSci students. Add your Level 4 courses and grades. MSci needs a Level 4 GPA of 12.0.",
 };
 
 // BSc/MSci progression regulations 2025-26 (source of the rules).
@@ -80,6 +84,19 @@ const NOTE: Record<ProgressionTarget, ReactNode> = {
     <>
       checks the School of Computing Science entry rule only. Entry to Level 3
       also needs the College §15.1 requirements on the BSc Honours or MSci tab.
+    </>
+  ),
+  l3: (
+    <>
+      checks the Level 3 GPA. A GPA below 9.0 means switching to a designated
+      degree, and MSci students with a GPA of 9.0 to 11.9 switch to a BSc
+      programme.
+    </>
+  ),
+  l4: (
+    <>
+      checks the Level 4 GPA. MSci students with a GPA of 9.0 to 11.9 switch to a
+      BSc programme and graduate at Level 4.
     </>
   ),
 };

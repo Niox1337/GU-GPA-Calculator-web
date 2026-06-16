@@ -209,6 +209,9 @@ export default function App() {
     'gpa.progressionCourses',
     [],
   )
+  // Within-Honours progression checks each keep their own level's courses.
+  const [progressionL3, setProgressionL3] = usePersistentState<Course[]>('gpa.progressionL3', [])
+  const [progressionL4, setProgressionL4] = usePersistentState<Course[]>('gpa.progressionL4', [])
   // Computing Honours shows the six fixed Level 2 courses, so only the grades
   // are stored (keyed by course name) and the list is rebuilt from CS_L2_COURSES.
   const [csHonoursGrades, setCsHonoursGrades] = usePersistentState<Record<string, string>>(
@@ -339,13 +342,21 @@ export default function App() {
       ? csHonoursCourses
       : isHonoursEntry
         ? honoursCourses
-        : progressionCourses
+        : progressionTarget === 'l3'
+          ? progressionL3
+          : progressionTarget === 'l4'
+            ? progressionL4
+            : progressionCourses
   const setProgCourses =
     progressionTarget === 'cs-honours'
       ? setCsHonoursCourses
       : isHonoursEntry
         ? setHonoursCourses
-        : setProgressionCourses
+        : progressionTarget === 'l3'
+          ? setProgressionL3
+          : progressionTarget === 'l4'
+            ? setProgressionL4
+            : setProgressionCourses
 
   // Copy the Computing Honours courses (with grades) into the BSc Honours list,
   // skipping any already present by name, then switch to that tab.
