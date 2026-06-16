@@ -1,9 +1,9 @@
-import { Fragment, useEffect, useRef, useState } from 'react'
-import type { ChangeEvent, Dispatch, SetStateAction } from 'react'
+import { useRef } from 'react'
+import type { ChangeEvent } from 'react'
 import './App.css'
 import uogLogo from './assets/UoG.svg'
-import type { Course, CsDegree, JointSubject, ProgressionTarget } from './lib/gpa'
-import { CS_L2_COURSES, EXAMPLE_COURSES, computeDegree, computeJoint } from './lib/gpa'
+import type { Course, JointSubject } from './lib'
+import { EXAMPLE_COURSES, withIds } from './lib'
 import {
   DEFAULT_HONOURS_WEIGHTS,
   DEFAULT_IM_WEIGHTS,
@@ -16,9 +16,12 @@ import {
   readFile,
 } from './lib/io'
 import type { DataBundle } from './lib/io'
-import CourseList from './components/CourseList'
-import ProgressionCheck from './components/ProgressionCheck'
-import ResultCard from './components/ResultCard'
+import { usePersistentState } from './hooks/usePersistentState'
+import { useTheme } from './hooks/useTheme'
+import { useToast } from './hooks/useToast'
+import YearView from './components/YearView'
+import DegreeView from './components/DegreeView'
+import ProgressionView from './components/ProgressionView'
 import {
   AlertIcon,
   BookIcon,
@@ -26,164 +29,24 @@ import {
   DownloadIcon,
   ExternalIcon,
   GithubIcon,
-  GraduationIcon,
   MoonIcon,
-  RotateIcon,
-  SparklesIcon,
   StarIcon,
   SunIcon,
   UploadIcon,
 } from './components/Icons'
 
 type Mode = 'year' | 'degree' | 'progression'
-type DegreeType = 'honours' | 'joint' | 'integrated'
-type Theme = 'light' | 'dark'
-type Toast = { kind: 'success' | 'error'; msg: string }
 
 const GRADING_SCHEME_URL = 'https://www.gla.ac.uk/media/Media_124293_smxx.pdf'
 const REPO_URL = 'https://github.com/Niox1337/GU-GPA-Calculator-web'
 
-const HONOURS_LABELS = ['Junior Honours', 'Senior Honours']
-const IM_LABELS = ['Year 3', 'Year 4', 'Year 5']
-
-function usePersistentState<T>(key: string, initial: T): [T, Dispatch<SetStateAction<T>>] {
-  const [value, setValue] = useState<T>(() => {
-    try {
-      const raw = localStorage.getItem(key)
-      return raw ? (JSON.parse(raw) as T) : initial
-    } catch {
-      return initial
-    }
-  })
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(key, JSON.stringify(value))
-    } catch {
-      // Private browsing and full storage should not stop the calculator working.
-    }
-  }, [key, value])
-
-  return [value, setValue]
-}
-
-// Example rows need stable React keys, but they should still be treated as fresh form data.
-const withIds = (list: Omit<Course, 'id'>[]): Course[] =>
-  list.map((c, i) => ({ ...c, id: `ex-${i}-${Math.random().toString(36).slice(2, 7)}` }))
-
-function DegreeSummary({
-  years,
-  weights,
-  labels,
-}: {
-  years: Course[][]
-  weights: number[]
-  labels: string[]
-}) {
-  const r = computeDegree(years, weights)
-  const ready = years.some((y) => y.some((c) => c.grade))
-  const totalWeight = weights.reduce((s, w) => s + w, 0)
-
-  return (
-    <div className="honours-summary">
-      <div className="honours-formula">
-        {years.map((_, i) => (
-          <Fragment key={i}>
-            {i > 0 && <span className="formula-op">+</span>}
-            <div className="formula-term">
-              <span className="formula-label">
-                {labels[i]} · {weights[i] ?? 0}%
-              </span>
-              <span className="formula-value">{ready ? r.yearGpas[i].toFixed(1) : '-'}</span>
-            </div>
-          </Fragment>
-        ))}
-        <span className="formula-op">=</span>
-        <div className="formula-term formula-term--final">
-          <span className="formula-label">Final GPA</span>
-          <span className="formula-value">{ready ? r.finalGpa.toFixed(1) : '-'}</span>
-        </div>
-      </div>
-
-      {totalWeight !== 100 && (
-        <p className="weight-note">
-          Weights total {totalWeight}%, the final GPA is normalised to that total.
-        </p>
-      )}
-
-      <div className={`classification${ready ? '' : ' is-empty'}`}>
-        <GraduationIcon width={22} height={22} />
-        <span>{ready ? r.classification : 'Add grades to see your degree classification'}</span>
-      </div>
-
-      {ready && r.borderline && (
-        <p className="border-note">
-          <strong>Borderline rule 16.37(d):</strong> a GPA of {r.finalGpa.toFixed(1)} falls between
-          two bands, so the classification is set by the weighted grade profile, {r.reason}.
-        </p>
-      )}
-    </div>
-  )
-}
-
-function JointSummary({
-  subjects,
-  subjectWeights,
-}: {
-  subjects: JointSubject[]
-  subjectWeights: number[]
-}) {
-  const r = computeJoint(subjects, subjectWeights)
-  const ready = subjects.some((s) => s.years.some((y) => y.some((c) => c.grade)))
-  const totalWeight = subjectWeights.reduce((s, w) => s + w, 0)
-
-  return (
-    <div className="honours-summary">
-      <div className="honours-formula">
-        {subjects.map((s, i) => (
-          <Fragment key={i}>
-            {i > 0 && <span className="formula-op">+</span>}
-            <div className="formula-term">
-              <span className="formula-label">
-                {s.name} · {subjectWeights[i] ?? 0}%
-              </span>
-              <span className="formula-value">{ready ? r.subjectGpas[i].toFixed(1) : '-'}</span>
-            </div>
-          </Fragment>
-        ))}
-        <span className="formula-op">=</span>
-        <div className="formula-term formula-term--final">
-          <span className="formula-label">Joint GPA</span>
-          <span className="formula-value">{ready ? r.finalGpa.toFixed(1) : '-'}</span>
-        </div>
-      </div>
-
-      {totalWeight !== 100 && (
-        <p className="weight-note">
-          Subject weights total {totalWeight}%, the joint GPA is normalised to that total.
-        </p>
-      )}
-
-      <div className={`classification${ready ? '' : ' is-empty'}`}>
-        <GraduationIcon width={22} height={22} />
-        <span>{ready ? r.classification : 'Add grades to see your degree classification'}</span>
-      </div>
-
-      {ready && r.borderline && (
-        <p className="border-note">
-          <strong>Borderline rule 16.37(d):</strong> a joint GPA of {r.finalGpa.toFixed(1)} falls
-          between two bands, so the classification is set by the weighted grade profile, {r.reason}.
-        </p>
-      )}
-    </div>
-  )
-}
-
 export default function App() {
-  const [theme, setTheme] = usePersistentState<Theme>('gpa.theme', 'light')
+  const { theme, toggle } = useTheme()
+  const { toast, setToast } = useToast()
   const [mode, setMode] = usePersistentState<Mode>('gpa.mode', 'year')
+
+  // Course data that is part of the import/export bundle lives here, the app shell.
   const [year, setYear] = usePersistentState<Course[]>('gpa.year', withIds(EXAMPLE_COURSES))
-  const [degreeType, setDegreeType] = usePersistentState<DegreeType>('gpa.degreeType', 'honours')
   const [honoursYears, setHonoursYears] = usePersistentState<Course[][]>('gpa.honoursYears', [[], []])
   const [honoursWeights, setHonoursWeights] = usePersistentState<number[]>(
     'gpa.honoursWeights',
@@ -199,83 +62,8 @@ export default function App() {
     'gpa.jointSubjectWeights',
     DEFAULT_SUBJECT_WEIGHTS,
   )
-  const [progressionTarget, setProgressionTarget] = usePersistentState<ProgressionTarget>(
-    'gpa.progressionTarget',
-    'l2',
-  )
-  const [csDegree, setCsDegree] = usePersistentState<CsDegree>('gpa.csDegree', 'csh')
-  // Level 1->2 and Level 2->3 share one general course list.
-  const [progressionCourses, setProgressionCourses] = usePersistentState<Course[]>(
-    'gpa.progressionCourses',
-    [],
-  )
-  // Within-Honours progression checks each keep their own level's courses.
-  const [progressionL3, setProgressionL3] = usePersistentState<Course[]>('gpa.progressionL3', [])
-  const [progressionL4, setProgressionL4] = usePersistentState<Course[]>('gpa.progressionL4', [])
-  // Computing Honours shows the six fixed Level 2 courses, so only the grades
-  // are stored (keyed by course name) and the list is rebuilt from CS_L2_COURSES.
-  const [csHonoursGrades, setCsHonoursGrades] = usePersistentState<Record<string, string>>(
-    'gpa.csHonoursGrades',
-    {},
-  )
-  // BSc and MSci admission are both assessed on the full record to date, so they
-  // share one list of every qualifying course.
-  const [honoursCourses, setHonoursCourses] = usePersistentState<Course[]>(
-    'gpa.honoursCourses',
-    [],
-  )
 
-  const csHonoursCourses: Course[] = CS_L2_COURSES.map((c) => ({
-    ...c,
-    id: c.name,
-    grade: csHonoursGrades[c.name] ?? '',
-  }))
-  const setCsHonoursCourses = (next: Course[]) =>
-    setCsHonoursGrades(Object.fromEntries(next.map((c) => [c.name, c.grade])))
-
-  const [toast, setToast] = useState<Toast | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-
-  useEffect(() => {
-    document.documentElement.dataset.theme = theme
-  }, [theme])
-
-  useEffect(() => {
-    if (!toast) return
-    const t = setTimeout(() => setToast(null), 4000)
-    return () => clearTimeout(t)
-  }, [toast])
-
-  const isJoint = degreeType === 'joint'
-  const isHonours = degreeType === 'honours'
-  const years = isHonours ? honoursYears : imYears
-  const setYears = isHonours ? setHonoursYears : setImYears
-  const weights = isHonours ? honoursWeights : imWeights
-  const setWeights = isHonours ? setHonoursWeights : setImWeights
-  const yearLabels = isHonours ? HONOURS_LABELS : IM_LABELS
-
-  const setYearAt = (i: number, courses: Course[]) =>
-    setYears((prev) => prev.map((y, idx) => (idx === i ? courses : y)))
-  const setWeightAt = (i: number, w: number) =>
-    setWeights((prev) => prev.map((x, idx) => (idx === i ? w : x)))
-
-  // Joint Honours updaters (subject -> year -> courses/weights).
-  const setSubjectName = (si: number, name: string) =>
-    setJointSubjects((prev) => prev.map((s, i) => (i === si ? { ...s, name } : s)))
-  const setSubjectYear = (si: number, yi: number, courses: Course[]) =>
-    setJointSubjects((prev) =>
-      prev.map((s, i) =>
-        i === si ? { ...s, years: s.years.map((y, j) => (j === yi ? courses : y)) } : s,
-      ),
-    )
-  const setSubjectYearWeight = (si: number, yi: number, w: number) =>
-    setJointSubjects((prev) =>
-      prev.map((s, i) =>
-        i === si ? { ...s, yearWeights: s.yearWeights.map((x, j) => (j === yi ? w : x)) } : s,
-      ),
-    )
-  const setSubjectWeightAt = (si: number, w: number) =>
-    setJointSubjectWeights((prev) => prev.map((x, i) => (i === si ? w : x)))
 
   const currentBundle = (): DataBundle => ({
     year,
@@ -286,13 +74,6 @@ export default function App() {
     imYears,
     imWeights,
   })
-
-  const resetCurrent = () => {
-    if (mode === 'year') setYear([])
-    else if (isJoint) {
-      setJointSubjects((prev) => prev.map((s) => ({ ...s, years: s.years.map(() => []) })))
-    } else setYears(years.map(() => []))
-  }
 
   const handleExport = () => {
     const bundle = currentBundle()
@@ -329,46 +110,6 @@ export default function App() {
     } catch (err) {
       setToast({ kind: 'error', msg: err instanceof Error ? err.message : 'Could not import that file.' })
     }
-  }
-
-  const degreeHasData = isJoint
-    ? jointSubjects.some((s) => s.years.some((y) => y.length > 0))
-    : years.some((y) => y.length > 0)
-
-  // Route each progression target to its own saved course list.
-  const isHonoursEntry = progressionTarget === 'bsc' || progressionTarget === 'msci'
-  const progCourses =
-    progressionTarget === 'cs-honours'
-      ? csHonoursCourses
-      : isHonoursEntry
-        ? honoursCourses
-        : progressionTarget === 'l3'
-          ? progressionL3
-          : progressionTarget === 'l4'
-            ? progressionL4
-            : progressionCourses
-  const setProgCourses =
-    progressionTarget === 'cs-honours'
-      ? setCsHonoursCourses
-      : isHonoursEntry
-        ? setHonoursCourses
-        : progressionTarget === 'l3'
-          ? setProgressionL3
-          : progressionTarget === 'l4'
-            ? setProgressionL4
-            : setProgressionCourses
-
-  // Copy the Computing Honours courses (with grades) into the BSc Honours list,
-  // skipping any already present by name, then switch to that tab.
-  const transferCsToBsc = () => {
-    setHonoursCourses((prev) => {
-      const existing = new Set(prev.map((c) => c.name))
-      const additions = csHonoursCourses
-        .filter((c) => !existing.has(c.name))
-        .map(({ name, credit, grade }) => ({ name, credit, grade }))
-      return [...prev, ...withIds(additions)]
-    })
-    setProgressionTarget('bsc')
   }
 
   return (
@@ -426,7 +167,7 @@ export default function App() {
           <button
             type="button"
             className="icon-btn"
-            onClick={() => setTheme((t) => (t === 'light' ? 'dark' : 'light'))}
+            onClick={toggle}
             aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
             title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
           >
@@ -464,183 +205,24 @@ export default function App() {
 
       <main className="app-main">
         {mode === 'year' ? (
-          <div className="layout">
-            <section className="panel" aria-label="Courses">
-              <div className="panel-head">
-                <h2>Your courses</h2>
-                <div className="panel-tools">
-                  {year.length === 0 && (
-                    <button
-                      type="button"
-                      className="btn btn--ghost btn--sm"
-                      onClick={() => setYear(withIds(EXAMPLE_COURSES))}
-                    >
-                      <SparklesIcon width={16} height={16} />
-                      Load example
-                    </button>
-                  )}
-                  {year.length > 0 && (
-                    <button type="button" className="btn btn--ghost btn--sm" onClick={resetCurrent}>
-                      <RotateIcon width={16} height={16} />
-                      Clear
-                    </button>
-                  )}
-                </div>
-              </div>
-              <CourseList courses={year} onChange={setYear} idPrefix="year" />
-            </section>
-            <aside className="panel panel--result">
-              <ResultCard courses={year} />
-            </aside>
-          </div>
+          <YearView courses={year} onChange={setYear} />
         ) : mode === 'progression' ? (
-          <ProgressionCheck
-            target={progressionTarget}
-            onTargetChange={setProgressionTarget}
-            csDegree={csDegree}
-            onCsDegreeChange={setCsDegree}
-            courses={progCourses}
-            onChange={setProgCourses}
-            onTransferToBsc={transferCsToBsc}
-          />
+          <ProgressionView />
         ) : (
-          <div className="honours-layout">
-            <div className="degree-switch" role="tablist" aria-label="Degree type">
-              <button
-                role="tab"
-                aria-selected={isHonours}
-                className={`seg${isHonours ? ' is-active' : ''}`}
-                onClick={() => setDegreeType('honours')}
-              >
-                Honours
-              </button>
-              <button
-                role="tab"
-                aria-selected={isJoint}
-                className={`seg${isJoint ? ' is-active' : ''}`}
-                onClick={() => setDegreeType('joint')}
-              >
-                Joint Honours
-              </button>
-              <button
-                role="tab"
-                aria-selected={degreeType === 'integrated'}
-                className={`seg${degreeType === 'integrated' ? ' is-active' : ''}`}
-                onClick={() => setDegreeType('integrated')}
-              >
-                Integrated Masters
-              </button>
-            </div>
-
-            <p className="honours-intro">
-              {isHonours && 'Honours combines your two Honours years.'}
-              {isJoint &&
-                'Joint Honours aggregates each subject over its own years, then combines the two subjects (usually 50:50).'}
-              {degreeType === 'integrated' && 'Integrated Masters combines your final three years.'}{' '}
-              Weights are editable and are normalised to their total.
-            </p>
-
-            {isJoint ? (
-              <div className="joint-grid">
-                {jointSubjects.map((subject, si) => (
-                  <section className="panel joint-subject" key={si} aria-label={subject.name}>
-                    <div className="panel-head joint-subject-head">
-                      <input
-                        className="subject-name"
-                        value={subject.name}
-                        onChange={(e) => setSubjectName(si, e.target.value)}
-                        aria-label={`Subject ${si + 1} name`}
-                      />
-                      <label className="weight-field" title="Subject weighting">
-                        <span className="weight-prefix">subject</span>
-                        <input
-                          type="number"
-                          min="0"
-                          max="100"
-                          inputMode="numeric"
-                          value={jointSubjectWeights[si] ?? 0}
-                          onChange={(e) => setSubjectWeightAt(si, Number(e.target.value) || 0)}
-                          aria-label={`${subject.name} weight, percent`}
-                        />
-                        <span>%</span>
-                      </label>
-                    </div>
-
-                    {subject.years.map((yearCourses, yi) => (
-                      <div className="joint-year" key={yi}>
-                        <div className="joint-year-head">
-                          <h3>{HONOURS_LABELS[yi]}</h3>
-                          <label className="weight-field" title="Year weighting within this subject">
-                            <input
-                              type="number"
-                              min="0"
-                              max="100"
-                              inputMode="numeric"
-                              value={subject.yearWeights[yi] ?? 0}
-                              onChange={(e) =>
-                                setSubjectYearWeight(si, yi, Number(e.target.value) || 0)
-                              }
-                              aria-label={`${subject.name} ${HONOURS_LABELS[yi]} weight, percent`}
-                            />
-                            <span>%</span>
-                          </label>
-                        </div>
-                        <CourseList
-                          courses={yearCourses}
-                          onChange={(c) => setSubjectYear(si, yi, c)}
-                          idPrefix={`joint-${si}-${yi}`}
-                        />
-                      </div>
-                    ))}
-                  </section>
-                ))}
-              </div>
-            ) : (
-              <div className="honours-grid">
-                {years.map((yearCourses, i) => (
-                  <section className="panel" key={`${degreeType}-${i}`} aria-label={`${yearLabels[i]} courses`}>
-                    <div className="panel-head">
-                      <h2>{yearLabels[i]}</h2>
-                      <label className="weight-field" title={`${yearLabels[i]} programme weighting`}>
-                        <input
-                          type="number"
-                          min="0"
-                          max="100"
-                          inputMode="numeric"
-                          value={weights[i] ?? 0}
-                          onChange={(e) => setWeightAt(i, Number(e.target.value) || 0)}
-                          aria-label={`${yearLabels[i]} weight, percent`}
-                        />
-                        <span>%</span>
-                      </label>
-                    </div>
-                    <CourseList
-                      courses={yearCourses}
-                      onChange={(c) => setYearAt(i, c)}
-                      idPrefix={`${degreeType}-${i}`}
-                    />
-                  </section>
-                ))}
-              </div>
-            )}
-
-            <section className="panel panel--result">
-              <div className="panel-head">
-                <h2>Degree classification</h2>
-                {degreeHasData && (
-                  <button type="button" className="btn btn--ghost btn--sm" onClick={resetCurrent}>
-                    <RotateIcon width={16} height={16} />
-                    Clear
-                  </button>
-                )}
-              </div>
-              {isJoint ? (
-                <JointSummary subjects={jointSubjects} subjectWeights={jointSubjectWeights} />
-              ) : (
-                <DegreeSummary years={years} weights={weights} labels={yearLabels} />
-              )}
-            </section>
-          </div>
+          <DegreeView
+            honoursYears={honoursYears}
+            setHonoursYears={setHonoursYears}
+            honoursWeights={honoursWeights}
+            setHonoursWeights={setHonoursWeights}
+            imYears={imYears}
+            setImYears={setImYears}
+            imWeights={imWeights}
+            setImWeights={setImWeights}
+            jointSubjects={jointSubjects}
+            setJointSubjects={setJointSubjects}
+            jointSubjectWeights={jointSubjectWeights}
+            setJointSubjectWeights={setJointSubjectWeights}
+          />
         )}
       </main>
 

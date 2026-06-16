@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
-import type { Course, CsDegree, ProgressionTarget } from "../lib/gpa";
-import { checkProgression } from "../lib/gpa";
+import type { Course, CsDegree, ProgressionTarget } from "../lib";
+import { checkProgression } from "../lib";
 import CourseList from "./CourseList";
 import {
   AlertIcon,
