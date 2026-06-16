@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import type { FormEvent } from "react";
-import type { Course } from "../lib/gpa";
-import { GRADES, gradePoint } from "../lib/gpa";
+import type { Course } from "../lib";
+import { GRADES, gradePoint } from "../lib";
 import { CATALOGUE_TREE } from "../lib/catalogue";
 import type { CatalogueCourse } from "../lib/catalogue";
 import {

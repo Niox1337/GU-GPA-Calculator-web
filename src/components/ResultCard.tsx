@@ -1,12 +1,12 @@
 import { useState } from 'react'
-import type { Course } from '../lib/gpa'
+import type { Course } from '../lib'
 import {
   classifyHonours,
   classifyPGT,
   computeYear,
   creditDistribution,
   yearProfile,
-} from '../lib/gpa'
+} from '../lib'
 import { ChevronIcon } from './Icons'
 
 interface Props {
