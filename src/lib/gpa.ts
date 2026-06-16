@@ -411,6 +411,129 @@ export function computeJoint(subjects: JointSubject[], subjectWeights: number[])
   }
 }
 
+// ============================================================================
+// Progression checks (College of Science & Engineering minimum requirements)
+// https://www.gla.ac.uk/colleges/scienceengineering/students/scienceprogresscommitteecose-spc/
+// ============================================================================
+
+// Science progression thresholds on the Schedule A scale.
+// D3 = 9 is the minimum pass; the Computing Science Honours entry rule uses C3 = 12.
+const D3_POINTS = gradePoint('D3')
+const C3_POINTS = gradePoint('C3')
+
+const round1 = (n: number) => Math.round(n * 10) / 10
+
+/**
+ * Credit-weighted GPA over the best `n` credits. Counted courses are ranked by
+ * grade point, highest first, then accumulated until `n` credits are reached.
+ * The course that straddles the boundary contributes only the fraction of its
+ * credits needed to reach `n`, so the result reflects exactly the best `n`
+ * credits. `credits` reports how many were actually available (may be below `n`).
+ */
+export function bestCreditsGpa(courses: Course[], n: number): { gpa: number; credits: number } {
+  const ranked = courses
+    .filter(isCounted)
+    .sort((a, b) => gradePoint(b.grade) - gradePoint(a.grade))
+
+  let remaining = n
+  let weighted = 0
+  let used = 0
+  for (const c of ranked) {
+    if (remaining <= 0) break
+    const credit = Math.min(Number(c.credit), remaining)
+    weighted += gradePoint(c.grade) * credit
+    used += credit
+    remaining -= credit
+  }
+  return { gpa: used ? weighted / used : 0, credits: used }
+}
+
+/** Total credits whose grade sits at or above the given point value (counted courses only). */
+export function creditsAtOrAbove(courses: Course[], minPoint: number): number {
+  return courses
+    .filter(isCounted)
+    .filter((c) => gradePoint(c.grade) >= minPoint)
+    .reduce((s, c) => s + Number(c.credit), 0)
+}
+
+export type ProgressionTarget = 'l1' | 'l2' | 'cs-honours'
+
+export interface Requirement {
+  label: string
+  met: boolean
+  detail: string
+}
+
+export interface ProgressionResult {
+  /** True only when every requirement is satisfied. */
+  met: boolean
+  /** False until at least one course has a grade, so the UI can stay neutral. */
+  ready: boolean
+  requirements: Requirement[]
+}
+
+/**
+ * Evaluate a student's courses against the minimum progression requirements for
+ * the chosen target. Each requirement is reported separately so the UI can show
+ * a per-rule checklist. The general Science checks (`l1`, `l2`) need 80 credits,
+ * a GPA of at least 8 over the best 80 credits, and 60 credits at D3 or better.
+ * `cs-honours` adds the School of Computing Science rule: a GPA of at least 12
+ * (C3) over 60 credits of Level 2 computing courses at first attempt.
+ */
+export function checkProgression(target: ProgressionTarget, courses: Course[]): ProgressionResult {
+  const counted = courses.filter(isCounted)
+  const totalCredit = counted.reduce((s, c) => s + Number(c.credit), 0)
+  const ready = counted.length > 0
+
+  let requirements: Requirement[]
+
+  if (target === 'cs-honours') {
+    const best60 = bestCreditsGpa(counted, 60)
+    const gpa60 = round1(best60.gpa)
+    requirements = [
+      {
+        label: 'At least 60 credits of Level 2 computing courses',
+        met: totalCredit >= 60,
+        detail: `${totalCredit} credits entered`,
+      },
+      {
+        label: 'GPA of at least 12 (C3) over 60 credits at first attempt',
+        met: best60.credits >= 60 && gpa60 >= C3_POINTS,
+        detail:
+          best60.credits >= 60
+            ? `GPA ${gpa60.toFixed(1)} over the best 60 credits`
+            : `Only ${best60.credits} credits available`,
+      },
+    ]
+  } else {
+    const best80 = bestCreditsGpa(counted, 80)
+    const gpa80 = round1(best80.gpa)
+    const d3plus = creditsAtOrAbove(counted, D3_POINTS)
+    requirements = [
+      {
+        label: 'At least 80 credits',
+        met: totalCredit >= 80,
+        detail: `${totalCredit} credits entered`,
+      },
+      {
+        label: 'GPA of at least 8 across the best 80 credits',
+        met: best80.credits >= 80 && gpa80 >= 8,
+        detail:
+          best80.credits >= 80
+            ? `GPA ${gpa80.toFixed(1)} over the best 80 credits`
+            : `Only ${best80.credits} credits available`,
+      },
+      {
+        label: '60 credits at D3 or better',
+        met: d3plus >= 60,
+        detail: `${d3plus} credits at D3 or above`,
+      },
+    ]
+  }
+
+  return { met: requirements.every((r) => r.met), ready, requirements }
+}
+
 // Example Senior Honours year for Computing Science.
 // Course titles and credit weights follow the UofG catalogue pattern.
 export const EXAMPLE_COURSES: Omit<Course, 'id'>[] = [

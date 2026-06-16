@@ -16,6 +16,28 @@ interface Props {
   courses: Course[];
   onChange: (courses: Course[]) => void;
   idPrefix: string;
+  /** Restrict the catalogue search to the courses that match this predicate. */
+  catalogueFilter?: (course: CatalogueCourse) => boolean;
+  /** Hide the manual add form so courses can only be picked from the catalogue. */
+  catalogueOnly?: boolean;
+  /** Label for the catalogue-only add button. */
+  pickLabel?: string;
+  /** Helper text shown under the catalogue-only add button. */
+  pickHint?: string;
+}
+
+type Tree = typeof CATALOGUE_TREE;
+
+/** Filter the catalogue tree by a course predicate, dropping empty levels and schools. */
+function filterTree(tree: Tree, pred: (c: CatalogueCourse) => boolean): Tree {
+  return tree
+    .map((s) => {
+      const levels = s.levels
+        .map((l) => ({ ...l, courses: l.courses.filter(pred) }))
+        .filter((l) => l.courses.length > 0);
+      return { ...s, levels, total: levels.reduce((n, l) => n + l.courses.length, 0) };
+    })
+    .filter((s) => s.total > 0);
 }
 
 const LEVEL_LABEL: Record<number, string> = {
@@ -31,7 +53,15 @@ const newId = () =>
     ? crypto.randomUUID()
     : Math.random().toString(36).slice(2);
 
-export default function CourseList({ courses, onChange, idPrefix }: Props) {
+export default function CourseList({
+  courses,
+  onChange,
+  idPrefix,
+  catalogueFilter,
+  catalogueOnly = false,
+  pickLabel = "Add a course",
+  pickHint,
+}: Props) {
   const [name, setName] = useState("");
   const [credit, setCredit] = useState("");
   const [errors, setErrors] = useState<{ name?: string; credit?: string }>({});
@@ -64,8 +94,23 @@ export default function CourseList({ courses, onChange, idPrefix }: Props) {
   }
 
   // Picking a catalogue course fills the name and its standard credit value.
-  // The user can adjust the credits before adding.
+  // The user can adjust the credits before adding. In catalogue-only mode there
+  // is no form to fill, so the picked course is added straight to the list.
   function pickCourse(course: CatalogueCourse) {
+    if (catalogueOnly) {
+      onChange([
+        ...courses,
+        {
+          id: newId(),
+          name: course.name,
+          credit: String(course.credit),
+          grade: "",
+        },
+      ]);
+      setSearchOpen(false);
+      setQuery("");
+      return;
+    }
     setName(course.name);
     setCredit(String(course.credit));
     setErrors({});
@@ -100,27 +145,19 @@ export default function CourseList({ courses, onChange, idPrefix }: Props) {
     });
   }
 
-  // Filter by course name or code. An active query auto-expands matching groups.
+  // Restrict to the allowed courses first, then filter by name or code.
+  // An active query auto-expands matching groups.
+  const base = catalogueFilter
+    ? filterTree(CATALOGUE_TREE, catalogueFilter)
+    : CATALOGUE_TREE;
   const q = query.trim().toLowerCase();
   const tree = q
-    ? CATALOGUE_TREE.map((s) => {
-        const levels = s.levels
-          .map((l) => ({
-            ...l,
-            courses: l.courses.filter(
-              (c) =>
-                c.name.toLowerCase().includes(q) ||
-                c.code.toLowerCase().includes(q),
-            ),
-          }))
-          .filter((l) => l.courses.length > 0);
-        return {
-          ...s,
-          levels,
-          total: levels.reduce((n, l) => n + l.courses.length, 0),
-        };
-      }).filter((s) => s.total > 0)
-    : CATALOGUE_TREE;
+    ? filterTree(
+        base,
+        (c) =>
+          c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q),
+      )
+    : base;
 
   const totalResults = tree.reduce((n, s) => n + s.total, 0);
   const isSchoolOpen = (school: string) => q !== "" || openSchools.has(school);
@@ -128,7 +165,20 @@ export default function CourseList({ courses, onChange, idPrefix }: Props) {
 
   return (
     <div className="course-list">
-      <form className="add-form" onSubmit={addCourse} noValidate>
+      {catalogueOnly ? (
+        <div className="add-form add-form--locked">
+          <button
+            type="button"
+            className="btn btn--success btn--block"
+            onClick={() => setSearchOpen(true)}
+          >
+            <SearchIcon width={18} height={18} />
+            {pickLabel}
+          </button>
+          {pickHint && <p className="add-hint">{pickHint}</p>}
+        </div>
+      ) : (
+        <form className="add-form" onSubmit={addCourse} noValidate>
         <div className="field">
           <label htmlFor={`${idPrefix}-name`}>Course name</label>
           <input
@@ -190,13 +240,15 @@ export default function CourseList({ courses, onChange, idPrefix }: Props) {
           </button>
         </div>
       </form>
+      )}
 
       {courses.length === 0 ? (
         <div className="empty-state">
           <p className="empty-title">No courses yet</p>
           <p className="empty-sub">
-            Add your courses above, then pick each Schedule A grade to see your
-            GPA update instantly.
+            {catalogueOnly
+              ? "Add your Level 2 computing courses above, then pick each Schedule A grade to see your GPA update instantly."
+              : "Add your courses above, then pick each Schedule A grade to see your GPA update instantly."}
           </p>
         </div>
       ) : (

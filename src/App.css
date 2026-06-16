@@ -861,6 +861,108 @@
   cursor: help;
 }
 
+/* ---------- Catalogue-only add (locked picker) ---------- */
+.add-form--locked {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.btn--block {
+  width: 100%;
+  justify-content: center;
+}
+.add-hint {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+/* ---------- Progression check ---------- */
+.progress-result {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+.progress-verdict {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 1rem;
+  border-radius: var(--radius);
+  font-size: 1.15rem;
+  font-weight: 750;
+  border: 1px solid transparent;
+}
+.progress-verdict.is-pass {
+  color: var(--band-a);
+  background: color-mix(in srgb, var(--band-a) 12%, var(--surface));
+  border-color: color-mix(in srgb, var(--band-a) 30%, transparent);
+}
+.progress-verdict.is-fail {
+  color: var(--band-d);
+  background: color-mix(in srgb, var(--band-d) 12%, var(--surface));
+  border-color: color-mix(in srgb, var(--band-d) 30%, transparent);
+}
+.req-list {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.req {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  padding: 0.8rem 0.9rem;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--border-strong);
+}
+.req.is-met {
+  border-left-color: var(--band-a);
+}
+.req.is-unmet {
+  border-left-color: var(--band-d);
+}
+.req-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  flex-shrink: 0;
+  margin-top: 0.05rem;
+  color: #fff;
+}
+.req.is-met .req-icon {
+  background: var(--band-a);
+}
+.req.is-unmet .req-icon {
+  background: var(--band-d);
+}
+.req.is-idle .req-icon {
+  background: var(--border-strong);
+}
+.req-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+.req-label {
+  font-weight: 600;
+  font-size: 0.92rem;
+  line-height: 1.35;
+}
+.req-detail {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
 /* ---------- Star on GitHub CTA ---------- */
 .star-cta {
   display: flex;

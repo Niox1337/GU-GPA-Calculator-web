@@ -2,7 +2,7 @@ import { Fragment, useEffect, useRef, useState } from 'react'
 import type { ChangeEvent, Dispatch, SetStateAction } from 'react'
 import './App.css'
 import uogLogo from './assets/UoG.svg'
-import type { Course, JointSubject } from './lib/gpa'
+import type { Course, JointSubject, ProgressionTarget } from './lib/gpa'
 import { EXAMPLE_COURSES, computeDegree, computeJoint } from './lib/gpa'
 import {
   DEFAULT_HONOURS_WEIGHTS,
@@ -17,6 +17,7 @@ import {
 } from './lib/io'
 import type { DataBundle } from './lib/io'
 import CourseList from './components/CourseList'
+import ProgressionCheck from './components/ProgressionCheck'
 import ResultCard from './components/ResultCard'
 import {
   AlertIcon,
@@ -34,7 +35,7 @@ import {
   UploadIcon,
 } from './components/Icons'
 
-type Mode = 'year' | 'degree'
+type Mode = 'year' | 'degree' | 'progression'
 type DegreeType = 'honours' | 'joint' | 'integrated'
 type Theme = 'light' | 'dark'
 type Toast = { kind: 'success' | 'error'; msg: string }
@@ -197,6 +198,20 @@ export default function App() {
   const [jointSubjectWeights, setJointSubjectWeights] = usePersistentState<number[]>(
     'gpa.jointSubjectWeights',
     DEFAULT_SUBJECT_WEIGHTS,
+  )
+  const [progressionTarget, setProgressionTarget] = usePersistentState<ProgressionTarget>(
+    'gpa.progressionTarget',
+    'l2',
+  )
+  // Level 1->2 and Level 2->3 share one general course list; Computing Honours
+  // entry keeps its own list since it is scored on Level 2 computing courses only.
+  const [progressionCourses, setProgressionCourses] = usePersistentState<Course[]>(
+    'gpa.progressionCourses',
+    [],
+  )
+  const [csHonoursCourses, setCsHonoursCourses] = usePersistentState<Course[]>(
+    'gpa.csHonoursCourses',
+    [],
   )
 
   const [toast, setToast] = useState<Toast | null>(null)
@@ -376,11 +391,19 @@ export default function App() {
         </button>
         <button
           role="tab"
-          aria-selected={mode !== 'year'}
-          className={`tab${mode !== 'year' ? ' is-active' : ''}`}
+          aria-selected={mode === 'degree'}
+          className={`tab${mode === 'degree' ? ' is-active' : ''}`}
           onClick={() => setMode('degree')}
         >
           Degree classification
+        </button>
+        <button
+          role="tab"
+          aria-selected={mode === 'progression'}
+          className={`tab${mode === 'progression' ? ' is-active' : ''}`}
+          onClick={() => setMode('progression')}
+        >
+          Progression
         </button>
       </div>
 
@@ -415,6 +438,13 @@ export default function App() {
               <ResultCard courses={year} />
             </aside>
           </div>
+        ) : mode === 'progression' ? (
+          <ProgressionCheck
+            target={progressionTarget}
+            onTargetChange={setProgressionTarget}
+            courses={progressionTarget === 'cs-honours' ? csHonoursCourses : progressionCourses}
+            onChange={progressionTarget === 'cs-honours' ? setCsHonoursCourses : setProgressionCourses}
+          />
         ) : (
           <div className="honours-layout">
             <div className="degree-switch" role="tablist" aria-label="Degree type">
