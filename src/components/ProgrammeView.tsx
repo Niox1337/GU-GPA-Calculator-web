@@ -10,7 +10,7 @@ import {
 } from "../lib";
 import { newId } from "../lib";
 import { usePersistentState } from "../hooks/usePersistentState";
-import { csYearFilter, courseBaseName, COURSE_CATALOGUE } from "../lib/catalogue";
+import { csYearFilter, courseBaseName, semesterToTerm, COURSE_CATALOGUE } from "../lib/catalogue";
 
 // MSci research project, auto-added to a Computing Science Year 5.
 const MSCI_PROJECT_CODE = "COMPSCI5073P";
@@ -59,7 +59,7 @@ export default function ProgrammeView({ programme, setProgramme }: Props) {
         const c = COURSE_CATALOGUE.find((x) => x.code === MSCI_PROJECT_CODE);
         if (c) {
           year.courses = [
-            { id: newId(), name: c.name, credit: String(c.credit), grade: "", term: c.semester ?? "both" },
+            { id: newId(), name: c.name, credit: String(c.credit), grade: "", term: semesterToTerm(c.semester) },
           ];
         }
         // MSci classification splits years 3/4/5 as 24/36/40.

@@ -2,7 +2,7 @@
 """Add semester information to courses in src/data/courses.json.
 
 Reads the existing catalogue JSON produced by crawl_catalogue.py, then for each
-course of a school (School of Computing Science by default) fetches its course
+course (every school by default; narrow with --school) fetches its course
 page:
 
     https://www.gla.ac.uk/coursecatalogue/course/?code=COMPSCI...
@@ -19,16 +19,19 @@ term values the web app uses:
     "both"   -> runs across both semesters (full year / runs throughout)
     "summer" -> summer offering (placements, summer projects)
 
-Only the target school is touched; every other school is written back unchanged.
-Courses already carrying a "semester" value are skipped unless --force is given,
-so the script is safe to re-run and resume.
+Schools not matched by --school are written back unchanged. Courses already
+carrying a "semester" value are skipped unless --force is given, so the script
+is safe to re-run and resume.
 
 Requirements:
     pip install requests beautifulsoup4
 
 Examples:
-    # Add semesters to every Computing Science course
+    # Add semesters to every course in every school
     python scripts/scrape_semesters.py
+
+    # Only the School of Computing Science
+    python scripts/scrape_semesters.py --school "Computing Science"
 
     # Quick smoke test on the first five, printing the result instead of saving
     python scripts/scrape_semesters.py --limit 5 --stdout
@@ -147,8 +150,8 @@ def main() -> None:
         help=f"courses JSON to read and update (default: {default_data})",
     )
     parser.add_argument(
-        "--school", default="Computing Science",
-        help='only update schools whose name contains this text (default: "Computing Science")',
+        "--school", default="",
+        help='only update schools whose name contains this text (default: "" = all schools)',
     )
     parser.add_argument("--delay", type=float, default=0.3, help="seconds to wait before each request (default: 0.3)")
     parser.add_argument("--workers", type=int, default=6, help="parallel course-page fetches (default: 6)")

@@ -53,7 +53,7 @@ const CS_COURSES: [string, number, Term][][] = [
   ],
   [
     ['Algorithmic Foundations 2', 10, 's1'],
-    ['Algorithmics', 10, 's2'],
+    ['Web Application Development 2', 10, 's2'],
     ['Algorithms & Data Structures 2', 10, 's2'],
     ['Introduction to Object Oriented Programming', 10, 's1'],
     ['Networks and Operating Systems Essentials 2', 10, 's1'],
