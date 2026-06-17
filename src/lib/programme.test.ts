@@ -4,6 +4,7 @@ import {
   PRE_HONOURS_TARGET,
   coursesInTerm,
   creditStatus,
+  makeComputingScienceProgramme,
   makeDefaultProgramme,
   makeYear,
   preHonoursCredits,
@@ -64,6 +65,16 @@ describe('preHonoursCredits', () => {
     programme[2].courses = [yc('C', '120', 's1')]
     expect(preHonoursCredits(programme)).toBe(240)
     expect(creditStatus(preHonoursCredits(programme), PRE_HONOURS_TARGET).status).toBe('on-target')
+  })
+})
+
+describe('makeComputingScienceProgramme', () => {
+  it('pre-loads four years with courses on every year', () => {
+    const programme = makeComputingScienceProgramme()
+    expect(programme).toHaveLength(4)
+    expect(programme.every((y) => y.courses.length > 0)).toBe(true)
+    expect(yearCreditTotal(programme[0])).toBe(70)
+    expect(programme[3].courses.map((c) => c.name)).toContain('Individual Project (H) (Single)')
   })
 })
 

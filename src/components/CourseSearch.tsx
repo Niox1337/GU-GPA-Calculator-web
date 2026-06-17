@@ -2,6 +2,7 @@ import { useState } from "react";
 import { CATALOGUE_TREE, COURSE_CATALOGUE } from "../lib/catalogue";
 import type { CatalogueCourse } from "../lib/catalogue";
 import { CheckIcon, ChevronIcon, CloseIcon, PlusIcon, SearchIcon } from "./Icons";
+import StrandTags from "./StrandTags";
 
 interface Props {
   /** Close the picker without adding. */
@@ -10,6 +11,10 @@ interface Props {
   onAdd: (courses: CatalogueCourse[]) => void;
   /** Whether a catalogue course is already in the list, so it shows as added. */
   isAdded: (course: CatalogueCourse) => boolean;
+  /** Optional restriction on which catalogue courses are searchable. */
+  filter?: (course: CatalogueCourse) => boolean;
+  /** Expand all schools and levels on open (for tightly filtered searches). */
+  autoExpand?: boolean;
 }
 
 type Tree = typeof CATALOGUE_TREE;
@@ -26,6 +31,13 @@ function filterTree(tree: Tree, pred: (c: CatalogueCourse) => boolean): Tree {
     .filter((s) => s.total > 0);
 }
 
+/** Honours (H) or Masters (M) strand from a course name suffix, else null. */
+function courseStrand(name: string): "H" | "M" | null {
+  if (/\(H\)|\sH$/.test(name)) return "H";
+  if (/\(M\)|\sM$/.test(name)) return "M";
+  return null;
+}
+
 const LEVEL_LABEL: Record<number, string> = {
   1: "Level 1",
   2: "Level 2",
@@ -35,9 +47,11 @@ const LEVEL_LABEL: Record<number, string> = {
 };
 
 /** Multi-select catalogue picker dialog, shared by every course list. */
-export default function CourseSearch({ onClose, onAdd, isAdded }: Props) {
+export default function CourseSearch({ onClose, onAdd, isAdded, filter, autoExpand }: Props) {
   const [query, setQuery] = useState("");
-  const [openSchools, setOpenSchools] = useState<Set<string>>(new Set());
+  const [openSchools, setOpenSchools] = useState<Set<string>>(
+    () => new Set(["School of Computing Science"]),
+  );
   const [openLevels, setOpenLevels] = useState<Set<string>>(new Set());
   // Catalogue courses ticked in the picker, keyed by their unique code.
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -75,18 +89,19 @@ export default function CourseSearch({ onClose, onAdd, isAdded }: Props) {
     });
   }
 
-  // Filter by course name or code. An active query auto-expands matching groups.
+  // Restrict the searchable set first (e.g. a Computing Science year), then by query.
+  const base = filter ? filterTree(CATALOGUE_TREE, filter) : CATALOGUE_TREE;
   const q = query.trim().toLowerCase();
   const tree = q
     ? filterTree(
-        CATALOGUE_TREE,
+        base,
         (c) => c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q),
       )
-    : CATALOGUE_TREE;
+    : base;
 
   const totalResults = tree.reduce((n, s) => n + s.total, 0);
-  const isSchoolOpen = (school: string) => q !== "" || openSchools.has(school);
-  const isLevelOpen = (key: string) => q !== "" || openLevels.has(key);
+  const isSchoolOpen = (school: string) => autoExpand || q !== "" || openSchools.has(school);
+  const isLevelOpen = (key: string) => autoExpand || q !== "" || openLevels.has(key);
   const selectedCount = selected.size;
 
   return (
@@ -196,6 +211,13 @@ export default function CourseSearch({ onClose, onAdd, isAdded }: Props) {
                                       </span>
                                       <span className="search-result__name">{c.name}</span>
                                       <span className="search-result__meta">
+                                        {courseStrand(c.name) && (
+                                          <span
+                                            className={`strand-tag strand-tag--${courseStrand(c.name)!.toLowerCase()}`}
+                                          >
+                                            {courseStrand(c.name)}
+                                          </span>
+                                        )}
                                         {added && (
                                           <span className="search-result__added">Added</span>
                                         )}
@@ -203,6 +225,11 @@ export default function CourseSearch({ onClose, onAdd, isAdded }: Props) {
                                           {c.credit} cr
                                         </span>
                                         <span className="search-result__code">{c.code}</span>
+                                      </span>
+                                      <span className="search-result__strands">
+                                        <StrandTags
+                                          strands={c.specialisms?.map((s) => s.strand) ?? []}
+                                        />
                                       </span>
                                     </button>
                                   </li>

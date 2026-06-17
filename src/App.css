@@ -156,6 +156,10 @@
 }
 
 /* ---------- Tabs ---------- */
+.tabs--sub {
+  margin-bottom: 1rem;
+}
+
 .tabs {
   display: inline-flex;
   gap: 0.25rem;
@@ -370,6 +374,15 @@
 .course-credit {
   font-size: 0.78rem;
   color: var(--text-muted);
+}
+.course-strands {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: 0.3rem;
+}
+.course-strands:empty {
+  display: none;
 }
 .course-grade {
   display: flex;
@@ -1406,6 +1419,7 @@
 .search-result {
   width: 100%;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.6rem;
   text-align: left;
@@ -1462,11 +1476,169 @@
   padding: 0.12rem 0.45rem;
   border-radius: 999px;
 }
+.strand-tag {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  padding: 0.12rem 0.45rem;
+  border-radius: 999px;
+}
+.strand-tag--h {
+  color: #15803d;
+  background: color-mix(in srgb, #15803d 14%, transparent);
+}
+.strand-tag--m {
+  color: #7c3aed;
+  background: color-mix(in srgb, #7c3aed 16%, transparent);
+}
+
+.spec-tag {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+  overflow-wrap: anywhere;
+}
+.spec-tag--0 { color: #2563eb; background: color-mix(in srgb, #2563eb 14%, transparent); }
+.spec-tag--1 { color: #db2777; background: color-mix(in srgb, #db2777 14%, transparent); }
+.spec-tag--2 { color: #dc2626; background: color-mix(in srgb, #dc2626 14%, transparent); }
+.spec-tag--3 { color: #0d9488; background: color-mix(in srgb, #0d9488 14%, transparent); }
+.spec-tag--4 { color: #b45309; background: color-mix(in srgb, #b45309 16%, transparent); }
+
+.strand-progress {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+@media (max-width: 640px) {
+  .strand-progress {
+    grid-template-columns: 1fr;
+  }
+}
+.strand-card {
+  min-width: 0;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+.strand-card.is-done {
+  border-color: color-mix(in srgb, #15803d 50%, var(--border));
+}
+.strand-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.45rem;
+}
+.strand-card__count {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.strand-card__bar {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+.strand-card__fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.2s ease;
+}
+.spec-fill--0 { background: #2563eb; }
+.spec-fill--1 { background: #db2777; }
+.spec-fill--2 { background: #dc2626; }
+.spec-fill--3 { background: #0d9488; }
+.spec-fill--4 { background: #b45309; }
+.strand-card__comp {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+.strand-card__comp li {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+.strand-card__comp li.is-picked {
+  color: #15803d;
+  font-weight: 600;
+}
+.comp-dot {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  border: 1.5px solid var(--border);
+  border-radius: 999px;
+}
+
+.programme-note {
+  font-weight: 600;
+  color: var(--text);
+}
+.degree-rules {
+  margin: 0 0 1.25rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
+  border-left: 4px solid var(--accent);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--accent) 7%, var(--surface));
+}
+.degree-rules h3 {
+  margin: 0 0 0.7rem;
+  font-size: 1.05rem;
+}
+.degree-rules ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.degree-rule {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: #b45309;
+}
+.degree-rule.is-ok {
+  color: #15803d;
+}
+.degree-rules__note {
+  margin: 0.7rem 0 0;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
 .search-result__meta {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   flex-shrink: 0;
+}
+.search-result__strands {
+  flex-basis: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.35rem;
+  padding-left: 1.75rem;
+}
+.search-result__strands:empty {
+  display: none;
 }
 .search-result__level {
   font-size: 0.68rem;

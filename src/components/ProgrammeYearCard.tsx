@@ -1,11 +1,12 @@
 import { useState } from "react";
-import type { FormEvent } from "react";
 import type { ProgrammeYear, Term, YearCourse } from "../lib";
 import { GRADES, computeYear, coursesInTerm, gradePoint, yearCreditTotal } from "../lib";
 import type { CatalogueCourse } from "../lib/catalogue";
+import { STRANDS_BY_NAME, courseBaseName } from "../lib/catalogue";
 import CourseSearch from "./CourseSearch";
+import StrandTags from "./StrandTags";
 import CreditMeter from "./CreditMeter";
-import { PlusIcon, SearchIcon, TrashIcon } from "./Icons";
+import { SearchIcon, TrashIcon } from "./Icons";
 
 interface Props {
   year: ProgrammeYear;
@@ -15,17 +16,17 @@ interface Props {
   index: number;
   /** Per-year credit target, or null when the combined pre-honours meter covers it. */
   creditTarget: number | null;
+  /** Optional restriction on which catalogue courses the search offers. */
+  searchFilter?: (course: CatalogueCourse) => boolean;
+  /** Expand the search tree automatically (for tightly filtered years). */
+  searchAutoExpand?: boolean;
+  /** Variant-agnostic base names of courses taken anywhere in the programme. */
+  takenBaseNames?: Set<string>;
 }
 
 const SEMESTERS: { key: "s1" | "s2"; label: string; short: string }[] = [
   { key: "s1", label: "Semester 1", short: "S1" },
   { key: "s2", label: "Semester 2", short: "S2" },
-];
-
-const TERMS: { key: Term; label: string }[] = [
-  { key: "s1", label: "S1" },
-  { key: "s2", label: "S2" },
-  { key: "both", label: "Both" },
 ];
 
 const newId = () =>
@@ -45,35 +46,24 @@ export default function ProgrammeYearCard({
   canRemove,
   index,
   creditTarget,
+  searchFilter,
+  searchAutoExpand,
+  takenBaseNames,
 }: Props) {
-  const [name, setName] = useState("");
-  const [credit, setCredit] = useState("");
-  const [term, setTerm] = useState<Term>("s1");
-  const [errors, setErrors] = useState<{ name?: string; credit?: string }>({});
   const [searchOpen, setSearchOpen] = useState(false);
 
   const setCourses = (courses: YearCourse[]) => onChange({ ...year, courses });
 
-  function addCourse(e: FormEvent) {
-    e.preventDefault();
-    const next: typeof errors = {};
-    if (!name.trim()) next.name = "Course name is required";
-    if (!credit.trim()) next.credit = "Credits are required";
-    else if (!(Number(credit) > 0)) next.credit = "Credits must be a positive number";
-
-    setErrors(next);
-    if (next.name || next.credit) return;
-
-    setCourses([...year.courses, { id: newId(), name: name.trim(), credit: credit.trim(), grade: "", term }]);
-    setName("");
-    setCredit("");
-    setErrors({});
-  }
-
   function addFromCatalogue(picked: CatalogueCourse[]) {
     setCourses([
       ...year.courses,
-      ...picked.map((c) => ({ id: newId(), name: c.name, credit: String(c.credit), grade: "", term })),
+      ...picked.map((c) => ({
+        id: newId(),
+        name: c.name,
+        credit: String(c.credit),
+        grade: "",
+        term: (c.semester ?? "both") as Term,
+      })),
     ]);
   }
 
@@ -83,7 +73,7 @@ export default function ProgrammeYearCard({
 
   const result = computeYear(year.courses);
   const ready = result.countedCount > 0;
-  const addedNames = new Set(year.courses.map((c) => c.name.toLowerCase()));
+  const taken = takenBaseNames ?? new Set(year.courses.map((c) => courseBaseName(c.name)));
 
   return (
     <section className="panel year-row" aria-label={`${year.name} courses`}>
@@ -126,71 +116,12 @@ export default function ProgrammeYearCard({
       )}
 
       <div className="course-list">
-        <form className="add-form add-form--term" onSubmit={addCourse} noValidate>
-          <div className="field">
-            <label htmlFor={`py-${year.id}-name`}>Course name</label>
-            <input
-              id={`py-${year.id}-name`}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Computing Science"
-              aria-invalid={!!errors.name}
-              aria-describedby={errors.name ? `py-${year.id}-name-err` : undefined}
-            />
-            {errors.name && (
-              <span className="field-error" id={`py-${year.id}-name-err`} role="alert">
-                {errors.name}
-              </span>
-            )}
-          </div>
-          <div className="field field--credit">
-            <label htmlFor={`py-${year.id}-credit`}>Credits</label>
-            <input
-              id={`py-${year.id}-credit`}
-              value={credit}
-              onChange={(e) => setCredit(e.target.value)}
-              inputMode="numeric"
-              type="number"
-              min="1"
-              placeholder="20"
-              aria-invalid={!!errors.credit}
-              aria-describedby={errors.credit ? `py-${year.id}-credit-err` : undefined}
-            />
-            {errors.credit && (
-              <span className="field-error" id={`py-${year.id}-credit-err`} role="alert">
-                {errors.credit}
-              </span>
-            )}
-          </div>
-          <div className="field field--term">
-            <span className="field-label" id={`py-${year.id}-term`}>
-              Semester
-            </span>
-            <div className="term-seg" role="group" aria-labelledby={`py-${year.id}-term`}>
-              {TERMS.map((t) => (
-                <button
-                  key={t.key}
-                  type="button"
-                  className={`seg${term === t.key ? " is-active" : ""}`}
-                  aria-pressed={term === t.key}
-                  onClick={() => setTerm(t.key)}
-                >
-                  {t.label}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="add-actions">
-            <button type="submit" className="btn btn--primary">
-              <PlusIcon width={18} height={18} />
-              Add
-            </button>
-            <button type="button" className="btn btn--success" onClick={() => setSearchOpen(true)}>
-              <SearchIcon width={18} height={18} />
-              Search
-            </button>
-          </div>
-        </form>
+        <div className="add-actions">
+          <button type="button" className="btn btn--success" onClick={() => setSearchOpen(true)}>
+            <SearchIcon width={18} height={18} />
+            Search
+          </button>
+        </div>
 
         <div className="semesters">
           {SEMESTERS.map((sem) => {
@@ -215,6 +146,9 @@ export default function ProgrammeYearCard({
                               {c.term === "both" && <span className="course-term-tag">Both</span>}
                             </span>
                             <span className="course-credit">{c.credit} credits</span>
+                            <div className="course-strands">
+                              <StrandTags strands={STRANDS_BY_NAME.get(c.name.toLowerCase()) ?? []} />
+                            </div>
                           </div>
                           <div className="course-grade">
                             <label className="sr-only" htmlFor={`py-${year.id}-${sem.key}-grade-${c.id}`}>
@@ -257,7 +191,9 @@ export default function ProgrammeYearCard({
           <CourseSearch
             onClose={() => setSearchOpen(false)}
             onAdd={addFromCatalogue}
-            isAdded={(c) => addedNames.has(c.name.toLowerCase())}
+            isAdded={(c) => taken.has(courseBaseName(c.name))}
+            filter={searchFilter}
+            autoExpand={searchAutoExpand}
           />
         )}
       </div>

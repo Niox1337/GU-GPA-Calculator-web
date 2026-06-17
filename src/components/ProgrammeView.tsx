@@ -2,15 +2,23 @@ import type { Dispatch, SetStateAction } from "react";
 import type { ProgrammeYear } from "../lib";
 import {
   HONOURS_YEAR_TARGET,
-  PRE_HONOURS_TARGET,
   PRE_HONOURS_YEARS,
+  makeComputingScienceProgramme,
   makeDefaultProgramme,
   makeYear,
-  preHonoursCredits,
+  yearCreditTotal,
 } from "../lib";
+import { newId } from "../lib";
+import { usePersistentState } from "../hooks/usePersistentState";
+import { csYearFilter, courseBaseName, COURSE_CATALOGUE } from "../lib/catalogue";
+
+// MSci research project, auto-added to a Computing Science Year 5.
+const MSCI_PROJECT_CODE = "COMPSCI5073P";
 import CreditMeter from "./CreditMeter";
 import DegreeSummary from "./DegreeSummary";
 import ProgrammeYearCard from "./ProgrammeYearCard";
+import SpecialismProgress from "./SpecialismProgress";
+import DegreeRules from "./DegreeRules";
 import { PlusIcon, RotateIcon } from "./Icons";
 
 interface Props {
@@ -25,20 +33,84 @@ interface Props {
  * weights feed the projected classification (defaulting to a 40 / 60 honours split).
  */
 export default function ProgrammeView({ programme, setProgramme }: Props) {
-  const updateYear = (id: string, year: ProgrammeYear) =>
-    setProgramme((prev) => prev.map((y) => (y.id === id ? year : y)));
-  const addYear = () => setProgramme((prev) => [...prev, makeYear(`Year ${prev.length + 1}`)]);
-  const removeYear = (id: string) =>
-    setProgramme((prev) => (prev.length > 1 ? prev.filter((y) => y.id !== id) : prev));
-  const clearCourses = () =>
-    setProgramme((prev) => prev.map((y) => ({ ...y, courses: [] })));
-  const resetProgramme = () => setProgramme(makeDefaultProgramme());
+  const [sub, setSub] = usePersistentState<"general" | "cs">("gpa.programmeSub", "general");
+  const [csProgramme, setCsProgramme] = usePersistentState<ProgrammeYear[]>(
+    "gpa.programmeCS",
+    makeComputingScienceProgramme(),
+  );
 
-  const hasData = programme.some((y) => y.courses.length > 0);
-  const preHonoursSpan = Math.min(PRE_HONOURS_YEARS, programme.length);
+  const isGeneral = sub === "general";
+  const active = isGeneral ? programme : csProgramme;
+  const setActive = isGeneral ? setProgramme : setCsProgramme;
+
+  const updateYear = (id: string, year: ProgrammeYear) =>
+    setActive((prev) => prev.map((y) => (y.id === id ? year : y)));
+  const addYear = () =>
+    setActive((prev) => {
+      const highest = prev.reduce((max, y) => {
+        const n = Number(y.name.match(/\d+/)?.[0]);
+        return n > max ? n : max;
+      }, 0);
+      const next = highest + 1;
+      const year = makeYear(`Year ${next}`);
+      if (!isGeneral && next === 5) {
+        const c = COURSE_CATALOGUE.find((x) => x.code === MSCI_PROJECT_CODE);
+        if (c) {
+          year.courses = [
+            { id: newId(), name: c.name, credit: String(c.credit), grade: "", term: c.semester ?? "both" },
+          ];
+        }
+      }
+      return [...prev, year];
+    });
+  const removeYear = (id: string) =>
+    setActive((prev) => (prev.length > 1 ? prev.filter((y) => y.id !== id) : prev));
+  const clearCourses = () =>
+    setActive((prev) => prev.map((y) => ({ ...y, courses: [] })));
+  const resetProgramme = () =>
+    setActive(isGeneral ? makeDefaultProgramme() : makeComputingScienceProgramme());
+
+  const hasData = active.some((y) => y.courses.length > 0);
+
+  // Pre-honours years are the ones numbered 1..PRE_HONOURS_YEARS (by name, not
+  // position), so deleting Year 1 leaves Year 2 on its own 120 target.
+  const yearNum = (y: ProgrammeYear) => Number(y.name.match(/\d+/)?.[0]) || 0;
+  const isPreHonours = (y: ProgrammeYear) => {
+    const n = yearNum(y);
+    return n >= 1 && n <= PRE_HONOURS_YEARS;
+  };
+  // Courses taken anywhere in the programme, by variant-agnostic base name, so a
+  // course can't be added twice or in both its (H) and (M) forms across years.
+  const takenBaseNames = new Set(
+    active.flatMap((y) => y.courses).map((c) => courseBaseName(c.name)),
+  );
+
+  const preYears = active.filter(isPreHonours);
+  const preNums = preYears.map(yearNum).sort((a, b) => a - b);
+  const preLabel =
+    preNums.length > 1 ? `Years ${preNums[0]}-${preNums[preNums.length - 1]}` : `Year ${preNums[0]}`;
 
   return (
     <div className="programme-layout">
+      <div className="tabs tabs--sub" role="tablist" aria-label="Programme">
+        <button
+          role="tab"
+          aria-selected={isGeneral}
+          className={`tab${isGeneral ? " is-active" : ""}`}
+          onClick={() => setSub("general")}
+        >
+          General
+        </button>
+        <button
+          role="tab"
+          aria-selected={!isGeneral}
+          className={`tab${!isGeneral ? " is-active" : ""}`}
+          onClick={() => setSub("cs")}
+        >
+          Computing Science
+        </button>
+      </div>
+
       <p className="honours-intro">
         Build a whole programme year by year. Each year has one add form where you
         choose Semester 1, Semester 2, or both. Years 1 and 2 share a combined 240
@@ -46,22 +118,32 @@ export default function ProgrammeView({ programme, setProgramme }: Props) {
         projected classification and are normalised to their total.
       </p>
 
-      {programme.length > 0 && (
+      {!isGeneral && (
+        <p className="honours-intro programme-note">
+          Pre-loaded courses are compulsory. Years 1 and 2 list the mandatory courses for both
+          routes, so keep only the ones for your route (standard 1P or alternate 1PX).
+        </p>
+      )}
+
+      {preYears.length > 0 && (
         <CreditMeter
-          label={preHonoursSpan > 1 ? `Years 1-${preHonoursSpan}` : "Year 1"}
-          planned={preHonoursCredits(programme)}
-          target={PRE_HONOURS_TARGET}
+          label={preLabel}
+          planned={preYears.reduce((s, y) => s + yearCreditTotal(y), 0)}
+          target={preYears.length * HONOURS_YEAR_TARGET}
         />
       )}
 
       <div className="year-stack">
-        {programme.map((year, i) => (
+        {active.map((year, i) => (
           <ProgrammeYearCard
             key={year.id}
             year={year}
             index={i}
-            canRemove={programme.length > 1}
-            creditTarget={i >= PRE_HONOURS_YEARS ? HONOURS_YEAR_TARGET : null}
+            canRemove={active.length > 1}
+            creditTarget={isPreHonours(year) ? null : HONOURS_YEAR_TARGET}
+            searchFilter={isGeneral ? undefined : csYearFilter(yearNum(year) || i + 1)}
+            searchAutoExpand={!isGeneral && yearNum(year) === 5}
+            takenBaseNames={takenBaseNames}
             onChange={(y) => updateYear(year.id, y)}
             onRemove={() => removeYear(year.id)}
           />
@@ -86,14 +168,22 @@ export default function ProgrammeView({ programme, setProgramme }: Props) {
       </div>
 
       <section className="panel panel--result">
+        {!isGeneral && <DegreeRules programme={active} />}
         <div className="panel-head">
           <h2>Projected classification</h2>
         </div>
         <DegreeSummary
-          years={programme.map((y) => y.courses)}
-          weights={programme.map((y) => y.weight)}
-          labels={programme.map((y) => y.name)}
+          years={active.map((y) => y.courses)}
+          weights={active.map((y) => y.weight)}
+          labels={active.map((y) => y.name)}
         />
+        {!isGeneral && (
+          <SpecialismProgress
+            pickedNames={
+              new Set(active.flatMap((y) => y.courses).map((c) => c.name.toLowerCase()))
+            }
+          />
+        )}
       </section>
     </div>
   );
