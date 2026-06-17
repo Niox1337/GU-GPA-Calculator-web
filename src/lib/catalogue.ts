@@ -75,6 +75,52 @@ export const STRANDS_BY_NAME = new Map<string, string[]>(
   ]),
 )
 
+// ponytail: minimum optional courses per strand, from the CS handbook (not in the
+// course data). Update here if the handbook requirements change.
+const STRAND_MIN_OPTIONAL: Record<string, number> = {
+  'Data Management': 4,
+  'Human Computer Interaction': 4,
+  'Information Security': 3,
+  'Parallel and Distributed Systems': 3,
+  'Theoretical Computer Science': 4,
+}
+
+interface StrandInfo {
+  strand: string
+  minOptional: number
+  compulsory: string[]
+  optional: string[]
+}
+
+/** Compulsory and optional course names per strand, with the optional minimum. */
+const SPECIALISM_INFO: StrandInfo[] = SPECIALISM_STRANDS.map((strand) => {
+  const compulsory: string[] = []
+  const optional: string[] = []
+  for (const c of COURSE_CATALOGUE) {
+    const sp = c.specialisms?.find((s) => s.strand === strand)
+    if (!sp) continue
+    ;(sp.requirement === 'compulsory' ? compulsory : optional).push(c.name)
+  }
+  return { strand, minOptional: STRAND_MIN_OPTIONAL[strand] ?? 0, compulsory, optional }
+})
+
+export interface StrandProgress {
+  strand: string
+  pickedOptional: number
+  minOptional: number
+  compulsory: { name: string; picked: boolean }[]
+}
+
+/** Per-strand progress given the lowercased names of the courses already picked. */
+export function strandProgress(picked: Set<string>): StrandProgress[] {
+  return SPECIALISM_INFO.map((info) => ({
+    strand: info.strand,
+    minOptional: info.minOptional,
+    pickedOptional: info.optional.filter((n) => picked.has(n.toLowerCase())).length,
+    compulsory: info.compulsory.map((name) => ({ name, picked: picked.has(name.toLowerCase()) })),
+  }))
+}
+
 export interface LevelGroup {
   level: number
   courses: CatalogueCourse[]

@@ -14,6 +14,7 @@ import { csYearFilter } from "../lib/catalogue";
 import CreditMeter from "./CreditMeter";
 import DegreeSummary from "./DegreeSummary";
 import ProgrammeYearCard from "./ProgrammeYearCard";
+import SpecialismProgress from "./SpecialismProgress";
 import { PlusIcon, RotateIcon } from "./Icons";
 
 interface Props {
@@ -128,6 +129,13 @@ export default function ProgrammeView({ programme, setProgramme }: Props) {
           weights={active.map((y) => y.weight)}
           labels={active.map((y) => y.name)}
         />
+        {!isGeneral && (
+          <SpecialismProgress
+            pickedNames={
+              new Set(active.flatMap((y) => y.courses).map((c) => c.name.toLowerCase()))
+            }
+          />
+        )}
       </section>
     </div>
   );

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { COURSE_CATALOGUE, csYearFilter, STRANDS_BY_NAME } from './catalogue'
+import { COURSE_CATALOGUE, csYearFilter, STRANDS_BY_NAME, strandProgress } from './catalogue'
 
 const namesFor = (year: number) =>
   COURSE_CATALOGUE.filter(csYearFilter(year)).map((c) => c.code)
@@ -25,6 +25,18 @@ describe('csYearFilter', () => {
       'Parallel and Distributed Systems',
       'Theoretical Computer Science',
     ])
+  })
+
+  it('counts picked optionals and flags compulsory courses per strand', () => {
+    const picked = new Set([
+      'database systems (h)', // Data Management compulsory
+      'machine learning (h)', // Data Management optional
+      'web science (h)', // Data Management optional
+    ])
+    const dm = strandProgress(picked).find((r) => r.strand === 'Data Management')!
+    expect(dm.minOptional).toBe(4)
+    expect(dm.pickedOptional).toBe(2)
+    expect(dm.compulsory).toEqual([{ name: 'Database Systems (H)', picked: true }])
   })
 
   it('year 4 shows only levels 4-5 in School of Computing Science', () => {
