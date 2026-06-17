@@ -6,6 +6,7 @@
 // COURSE_CATALOGUE array (each course tagged with its school), so lookups are
 // synchronous and need no network. Add a school by adding a key in the JSON.
 import rawCatalogue from '../data/courses.json'
+import strandMinOptional from '../data/strandMinOptional.json'
 
 export interface Specialism {
   strand: string
@@ -19,7 +20,7 @@ interface RawCourse {
   /** SCQF year or level from 1 to 5, used as a grouping or label hint. */
   level: number
   /** Which semester(s) the course runs in, when known. */
-  semester?: 's1' | 's2' | 'both'
+  semester?: 's1' | 's2' | 'both' | 'summer'
   /** Honours specialism strands this course counts towards, when any. */
   specialisms?: Specialism[]
 }
@@ -37,6 +38,12 @@ export const SCHOOLS: string[] = Object.keys(catalogue)
 export const COURSE_CATALOGUE: CatalogueCourse[] = Object.entries(catalogue).flatMap(
   ([school, courses]) => courses.map((course) => ({ ...course, school })),
 )
+
+// Term a catalogue course maps to when added to a programme year. We don't model
+// summer school, so summer courses fall back to the default "both".
+export function semesterToTerm(semester: CatalogueCourse['semester']): 's1' | 's2' | 'both' {
+  return semester === 's1' || semester === 's2' ? semester : 'both'
+}
 
 // Computing Science Year 3 allow-list: the six pre-loaded honours courses plus
 // the standard optional courses, by catalogue code.
@@ -77,15 +84,9 @@ export const STRANDS_BY_NAME = new Map<string, string[]>(
   ]),
 )
 
-// ponytail: minimum optional courses per strand, from the CS handbook (not in the
-// course data). Update here if the handbook requirements change.
-const STRAND_MIN_OPTIONAL: Record<string, number> = {
-  'Data Management': 4,
-  'Human Computer Interaction': 4,
-  'Information Security': 3,
-  'Parallel and Distributed Systems': 3,
-  'Theoretical Computer Science': 4,
-}
+// Minimum optional courses per strand, from the CS handbook (not in the course
+// data). Edit src/data/strandMinOptional.json if the requirements change.
+const STRAND_MIN_OPTIONAL: Record<string, number> = strandMinOptional
 
 interface StrandInfo {
   strand: string

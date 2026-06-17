@@ -2,7 +2,7 @@ import { useState } from "react";
 import type { ProgrammeYear, Term, YearCourse } from "../lib";
 import { GRADES, computeYear, coursesInTerm, gradePoint, yearCreditTotal } from "../lib";
 import type { CatalogueCourse } from "../lib/catalogue";
-import { STRANDS_BY_NAME, courseBaseName } from "../lib/catalogue";
+import { STRANDS_BY_NAME, courseBaseName, semesterToTerm } from "../lib/catalogue";
 import CourseSearch from "./CourseSearch";
 import StrandTags from "./StrandTags";
 import CreditMeter from "./CreditMeter";
@@ -62,7 +62,7 @@ export default function ProgrammeYearCard({
         name: c.name,
         credit: String(c.credit),
         grade: "",
-        term: (c.semester ?? "both") as Term,
+        term: semesterToTerm(c.semester) as Term,
       })),
     ]);
   }
