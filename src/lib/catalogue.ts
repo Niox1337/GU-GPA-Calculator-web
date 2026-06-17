@@ -7,6 +7,11 @@
 // synchronous and need no network. Add a school by adding a key in the JSON.
 import rawCatalogue from '../data/courses.json'
 
+export interface Specialism {
+  strand: string
+  requirement: string
+}
+
 interface RawCourse {
   name: string
   code: string
@@ -15,6 +20,8 @@ interface RawCourse {
   level: number
   /** Which semester(s) the course runs in, when known. */
   semester?: 's1' | 's2' | 'both'
+  /** Honours specialism strands this course counts towards, when any. */
+  specialisms?: Specialism[]
 }
 
 export interface CatalogueCourse extends RawCourse {
@@ -50,6 +57,23 @@ export function csYearFilter(year: number): (c: CatalogueCourse) => boolean {
   if (year === 3) return (c) => CS_YEAR3_CODES.has(c.code)
   return (c) => c.level >= 4 && c.school === 'School of Computing Science'
 }
+
+// Fixed strand order; an index here is the colour slot for that strand's tag.
+export const SPECIALISM_STRANDS = [
+  'Data Management',
+  'Human Computer Interaction',
+  'Information Security',
+  'Parallel and Distributed Systems',
+  'Theoretical Computer Science',
+]
+
+/** Lowercased course name to its specialism strands, for tagging added courses by name. */
+export const STRANDS_BY_NAME = new Map<string, string[]>(
+  COURSE_CATALOGUE.filter((c) => c.specialisms?.length).map((c) => [
+    c.name.toLowerCase(),
+    c.specialisms!.map((s) => s.strand),
+  ]),
+)
 
 export interface LevelGroup {
   level: number

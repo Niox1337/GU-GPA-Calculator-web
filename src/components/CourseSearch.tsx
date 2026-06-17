@@ -2,6 +2,7 @@ import { useState } from "react";
 import { CATALOGUE_TREE, COURSE_CATALOGUE } from "../lib/catalogue";
 import type { CatalogueCourse } from "../lib/catalogue";
 import { CheckIcon, ChevronIcon, CloseIcon, PlusIcon, SearchIcon } from "./Icons";
+import StrandTags from "./StrandTags";
 
 interface Props {
   /** Close the picker without adding. */
@@ -26,6 +27,13 @@ function filterTree(tree: Tree, pred: (c: CatalogueCourse) => boolean): Tree {
       return { ...s, levels, total: levels.reduce((n, l) => n + l.courses.length, 0) };
     })
     .filter((s) => s.total > 0);
+}
+
+/** Honours (H) or Masters (M) strand from a course name suffix, else null. */
+function courseStrand(name: string): "H" | "M" | null {
+  if (/\(H\)|\sH$/.test(name)) return "H";
+  if (/\(M\)|\sM$/.test(name)) return "M";
+  return null;
 }
 
 const LEVEL_LABEL: Record<number, string> = {
@@ -201,6 +209,13 @@ export default function CourseSearch({ onClose, onAdd, isAdded, filter }: Props)
                                       </span>
                                       <span className="search-result__name">{c.name}</span>
                                       <span className="search-result__meta">
+                                        {courseStrand(c.name) && (
+                                          <span
+                                            className={`strand-tag strand-tag--${courseStrand(c.name)!.toLowerCase()}`}
+                                          >
+                                            {courseStrand(c.name)}
+                                          </span>
+                                        )}
                                         {added && (
                                           <span className="search-result__added">Added</span>
                                         )}
@@ -208,6 +223,11 @@ export default function CourseSearch({ onClose, onAdd, isAdded, filter }: Props)
                                           {c.credit} cr
                                         </span>
                                         <span className="search-result__code">{c.code}</span>
+                                      </span>
+                                      <span className="search-result__strands">
+                                        <StrandTags
+                                          strands={c.specialisms?.map((s) => s.strand) ?? []}
+                                        />
                                       </span>
                                     </button>
                                   </li>

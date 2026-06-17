@@ -2,7 +2,9 @@ import { useState } from "react";
 import type { ProgrammeYear, Term, YearCourse } from "../lib";
 import { GRADES, computeYear, coursesInTerm, gradePoint, yearCreditTotal } from "../lib";
 import type { CatalogueCourse } from "../lib/catalogue";
+import { STRANDS_BY_NAME } from "../lib/catalogue";
 import CourseSearch from "./CourseSearch";
+import StrandTags from "./StrandTags";
 import CreditMeter from "./CreditMeter";
 import { SearchIcon, TrashIcon } from "./Icons";
 
@@ -136,6 +138,7 @@ export default function ProgrammeYearCard({
                             <span className="course-name">
                               {c.name}
                               {c.term === "both" && <span className="course-term-tag">Both</span>}
+                              <StrandTags strands={STRANDS_BY_NAME.get(c.name.toLowerCase()) ?? []} />
                             </span>
                             <span className="course-credit">{c.credit} credits</span>
                           </div>

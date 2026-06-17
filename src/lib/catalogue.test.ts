@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { COURSE_CATALOGUE, csYearFilter } from './catalogue'
+import { COURSE_CATALOGUE, csYearFilter, STRANDS_BY_NAME } from './catalogue'
 
 const namesFor = (year: number) =>
   COURSE_CATALOGUE.filter(csYearFilter(year)).map((c) => c.code)
@@ -18,6 +18,13 @@ describe('csYearFilter', () => {
     expect(codes).toContain('COMPSCI4009') // pre-loaded Algorithmics I
     expect(codes).toContain('COMPSCI4105') // Quantum Computing elective
     expect(codes).not.toContain('COMPSCI1006') // level 1 excluded
+  })
+
+  it('maps a multi-strand course to its specialisms', () => {
+    expect(STRANDS_BY_NAME.get('functional programming (h)')).toEqual([
+      'Parallel and Distributed Systems',
+      'Theoretical Computer Science',
+    ])
   })
 
   it('year 4 shows only levels 4-5 in School of Computing Science', () => {
