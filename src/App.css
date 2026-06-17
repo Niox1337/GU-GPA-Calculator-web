@@ -156,6 +156,10 @@
 }
 
 /* ---------- Tabs ---------- */
+.tabs--sub {
+  margin-bottom: 1rem;
+}
+
 .tabs {
   display: inline-flex;
   gap: 0.25rem;

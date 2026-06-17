@@ -4,10 +4,12 @@ import {
   HONOURS_YEAR_TARGET,
   PRE_HONOURS_TARGET,
   PRE_HONOURS_YEARS,
+  makeComputingScienceProgramme,
   makeDefaultProgramme,
   makeYear,
   preHonoursCredits,
 } from "../lib";
+import { usePersistentState } from "../hooks/usePersistentState";
 import CreditMeter from "./CreditMeter";
 import DegreeSummary from "./DegreeSummary";
 import ProgrammeYearCard from "./ProgrammeYearCard";
@@ -25,20 +27,50 @@ interface Props {
  * weights feed the projected classification (defaulting to a 40 / 60 honours split).
  */
 export default function ProgrammeView({ programme, setProgramme }: Props) {
-  const updateYear = (id: string, year: ProgrammeYear) =>
-    setProgramme((prev) => prev.map((y) => (y.id === id ? year : y)));
-  const addYear = () => setProgramme((prev) => [...prev, makeYear(`Year ${prev.length + 1}`)]);
-  const removeYear = (id: string) =>
-    setProgramme((prev) => (prev.length > 1 ? prev.filter((y) => y.id !== id) : prev));
-  const clearCourses = () =>
-    setProgramme((prev) => prev.map((y) => ({ ...y, courses: [] })));
-  const resetProgramme = () => setProgramme(makeDefaultProgramme());
+  const [sub, setSub] = usePersistentState<"general" | "cs">("gpa.programmeSub", "general");
+  const [csProgramme, setCsProgramme] = usePersistentState<ProgrammeYear[]>(
+    "gpa.programmeCS",
+    makeComputingScienceProgramme(),
+  );
 
-  const hasData = programme.some((y) => y.courses.length > 0);
-  const preHonoursSpan = Math.min(PRE_HONOURS_YEARS, programme.length);
+  const isGeneral = sub === "general";
+  const active = isGeneral ? programme : csProgramme;
+  const setActive = isGeneral ? setProgramme : setCsProgramme;
+
+  const updateYear = (id: string, year: ProgrammeYear) =>
+    setActive((prev) => prev.map((y) => (y.id === id ? year : y)));
+  const addYear = () => setActive((prev) => [...prev, makeYear(`Year ${prev.length + 1}`)]);
+  const removeYear = (id: string) =>
+    setActive((prev) => (prev.length > 1 ? prev.filter((y) => y.id !== id) : prev));
+  const clearCourses = () =>
+    setActive((prev) => prev.map((y) => ({ ...y, courses: [] })));
+  const resetProgramme = () =>
+    setActive(isGeneral ? makeDefaultProgramme() : makeComputingScienceProgramme());
+
+  const hasData = active.some((y) => y.courses.length > 0);
+  const preHonoursSpan = Math.min(PRE_HONOURS_YEARS, active.length);
 
   return (
     <div className="programme-layout">
+      <div className="tabs tabs--sub" role="tablist" aria-label="Programme">
+        <button
+          role="tab"
+          aria-selected={isGeneral}
+          className={`tab${isGeneral ? " is-active" : ""}`}
+          onClick={() => setSub("general")}
+        >
+          General
+        </button>
+        <button
+          role="tab"
+          aria-selected={!isGeneral}
+          className={`tab${!isGeneral ? " is-active" : ""}`}
+          onClick={() => setSub("cs")}
+        >
+          Computing Science
+        </button>
+      </div>
+
       <p className="honours-intro">
         Build a whole programme year by year. Each year has one add form where you
         choose Semester 1, Semester 2, or both. Years 1 and 2 share a combined 240
@@ -46,21 +78,21 @@ export default function ProgrammeView({ programme, setProgramme }: Props) {
         projected classification and are normalised to their total.
       </p>
 
-      {programme.length > 0 && (
+      {active.length > 0 && (
         <CreditMeter
           label={preHonoursSpan > 1 ? `Years 1-${preHonoursSpan}` : "Year 1"}
-          planned={preHonoursCredits(programme)}
+          planned={preHonoursCredits(active)}
           target={PRE_HONOURS_TARGET}
         />
       )}
 
       <div className="year-stack">
-        {programme.map((year, i) => (
+        {active.map((year, i) => (
           <ProgrammeYearCard
             key={year.id}
             year={year}
             index={i}
-            canRemove={programme.length > 1}
+            canRemove={active.length > 1}
             creditTarget={i >= PRE_HONOURS_YEARS ? HONOURS_YEAR_TARGET : null}
             onChange={(y) => updateYear(year.id, y)}
             onRemove={() => removeYear(year.id)}
@@ -90,9 +122,9 @@ export default function ProgrammeView({ programme, setProgramme }: Props) {
           <h2>Projected classification</h2>
         </div>
         <DegreeSummary
-          years={programme.map((y) => y.courses)}
-          weights={programme.map((y) => y.weight)}
-          labels={programme.map((y) => y.name)}
+          years={active.map((y) => y.courses)}
+          weights={active.map((y) => y.weight)}
+          labels={active.map((y) => y.name)}
         />
       </section>
     </div>
