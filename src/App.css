@@ -375,6 +375,15 @@
   font-size: 0.78rem;
   color: var(--text-muted);
 }
+.course-strands {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: 0.3rem;
+}
+.course-strands:empty {
+  display: none;
+}
 .course-grade {
   display: flex;
   align-items: center;
@@ -1489,7 +1498,7 @@
   letter-spacing: 0.02em;
   padding: 0.1rem 0.4rem;
   border-radius: 999px;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 .spec-tag--0 { color: #2563eb; background: color-mix(in srgb, #2563eb 14%, transparent); }
 .spec-tag--1 { color: #db2777; background: color-mix(in srgb, #db2777 14%, transparent); }
@@ -1498,14 +1507,18 @@
 .spec-tag--4 { color: #b45309; background: color-mix(in srgb, #b45309 16%, transparent); }
 
 .strand-progress {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.75rem;
   margin-top: 1rem;
 }
+@media (max-width: 640px) {
+  .strand-progress {
+    grid-template-columns: 1fr;
+  }
+}
 .strand-card {
-  flex: 1 1 220px;
-  min-width: 200px;
+  min-width: 0;
   padding: 0.7rem 0.8rem;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -1568,6 +1581,46 @@
   flex-shrink: 0;
   border: 1.5px solid var(--border);
   border-radius: 999px;
+}
+
+.programme-note {
+  font-weight: 600;
+  color: var(--text);
+}
+.degree-rules {
+  margin: 0 0 1.25rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
+  border-left: 4px solid var(--accent);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--accent) 7%, var(--surface));
+}
+.degree-rules h3 {
+  margin: 0 0 0.7rem;
+  font-size: 1.05rem;
+}
+.degree-rules ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.degree-rule {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: #b45309;
+}
+.degree-rule.is-ok {
+  color: #15803d;
+}
+.degree-rules__note {
+  margin: 0.7rem 0 0;
+  font-size: 0.75rem;
+  color: var(--text-muted);
 }
 
 .search-result__meta {

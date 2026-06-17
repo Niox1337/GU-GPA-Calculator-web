@@ -13,6 +13,8 @@ interface Props {
   isAdded: (course: CatalogueCourse) => boolean;
   /** Optional restriction on which catalogue courses are searchable. */
   filter?: (course: CatalogueCourse) => boolean;
+  /** Expand all schools and levels on open (for tightly filtered searches). */
+  autoExpand?: boolean;
 }
 
 type Tree = typeof CATALOGUE_TREE;
@@ -45,7 +47,7 @@ const LEVEL_LABEL: Record<number, string> = {
 };
 
 /** Multi-select catalogue picker dialog, shared by every course list. */
-export default function CourseSearch({ onClose, onAdd, isAdded, filter }: Props) {
+export default function CourseSearch({ onClose, onAdd, isAdded, filter, autoExpand }: Props) {
   const [query, setQuery] = useState("");
   const [openSchools, setOpenSchools] = useState<Set<string>>(
     () => new Set(["School of Computing Science"]),
@@ -98,8 +100,8 @@ export default function CourseSearch({ onClose, onAdd, isAdded, filter }: Props)
     : base;
 
   const totalResults = tree.reduce((n, s) => n + s.total, 0);
-  const isSchoolOpen = (school: string) => q !== "" || openSchools.has(school);
-  const isLevelOpen = (key: string) => q !== "" || openLevels.has(key);
+  const isSchoolOpen = (school: string) => autoExpand || q !== "" || openSchools.has(school);
+  const isLevelOpen = (key: string) => autoExpand || q !== "" || openLevels.has(key);
   const selectedCount = selected.size;
 
   return (

@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { COURSE_CATALOGUE, csYearFilter, STRANDS_BY_NAME, strandProgress } from './catalogue'
+import {
+  COURSE_CATALOGUE,
+  checkCsRules,
+  courseBaseName,
+  csYearFilter,
+  STRANDS_BY_NAME,
+  strandProgress,
+} from './catalogue'
 
 const namesFor = (year: number) =>
   COURSE_CATALOGUE.filter(csYearFilter(year)).map((c) => c.code)
@@ -39,9 +46,37 @@ describe('csYearFilter', () => {
     expect(dm.compulsory).toEqual([{ name: 'Database Systems (H)', picked: true }])
   })
 
+  it('checks security, RMT, project and level-M credits', () => {
+    const r = checkCsRules([
+      { name: 'Cyber Security Fundamentals (H)', credit: 10 }, // Information Security strand
+      { name: 'Research Methods And Techniques (M) for MSci', credit: 10 }, // level 5
+      { name: 'MSci Research Proposal and Project', credit: 80 }, // level 5 project
+      { name: 'Algorithmics I (H)', credit: 10 }, // level 4, not counted toward level M
+    ])
+    expect(r.hasSecurity).toBe(true)
+    expect(r.hasRmt).toBe(true)
+    expect(r.hasProject).toBe(true)
+    expect(r.levelMCredits).toBe(90)
+  })
+
   it('year 4 shows only levels 4-5 in School of Computing Science', () => {
     const courses = COURSE_CATALOGUE.filter(csYearFilter(4))
     expect(courses.length).toBeGreaterThan(0)
     expect(courses.every((c) => c.level >= 4 && c.school === 'School of Computing Science')).toBe(true)
+  })
+
+  it('collapses (H) and (M) variants to one base name', () => {
+    const ml = courseBaseName('Machine Learning (H)')
+    expect(courseBaseName('Machine Learning (M)')).toBe(ml)
+    expect(courseBaseName('Quantum Computing H')).toBe('quantum computing')
+    expect(courseBaseName('Research Methods And Techniques (M) for MSci')).toBe(
+      'research methods and techniques',
+    )
+  })
+
+  it('year 5 shows only level M (level 5) in School of Computing Science', () => {
+    const courses = COURSE_CATALOGUE.filter(csYearFilter(5))
+    expect(courses.length).toBeGreaterThan(0)
+    expect(courses.every((c) => c.level === 5 && c.school === 'School of Computing Science')).toBe(true)
   })
 })

@@ -10,7 +10,7 @@ import {
 } from "../lib";
 import { newId } from "../lib";
 import { usePersistentState } from "../hooks/usePersistentState";
-import { csYearFilter, COURSE_CATALOGUE } from "../lib/catalogue";
+import { csYearFilter, courseBaseName, COURSE_CATALOGUE } from "../lib/catalogue";
 
 // MSci research project, auto-added to a Computing Science Year 5.
 const MSCI_PROJECT_CODE = "COMPSCI5073P";
@@ -18,6 +18,7 @@ import CreditMeter from "./CreditMeter";
 import DegreeSummary from "./DegreeSummary";
 import ProgrammeYearCard from "./ProgrammeYearCard";
 import SpecialismProgress from "./SpecialismProgress";
+import DegreeRules from "./DegreeRules";
 import { PlusIcon, RotateIcon } from "./Icons";
 
 interface Props {
@@ -78,6 +79,12 @@ export default function ProgrammeView({ programme, setProgramme }: Props) {
     const n = yearNum(y);
     return n >= 1 && n <= PRE_HONOURS_YEARS;
   };
+  // Courses taken anywhere in the programme, by variant-agnostic base name, so a
+  // course can't be added twice or in both its (H) and (M) forms across years.
+  const takenBaseNames = new Set(
+    active.flatMap((y) => y.courses).map((c) => courseBaseName(c.name)),
+  );
+
   const preYears = active.filter(isPreHonours);
   const preNums = preYears.map(yearNum).sort((a, b) => a - b);
   const preLabel =
@@ -111,6 +118,13 @@ export default function ProgrammeView({ programme, setProgramme }: Props) {
         projected classification and are normalised to their total.
       </p>
 
+      {!isGeneral && (
+        <p className="honours-intro programme-note">
+          Pre-loaded courses are compulsory. Years 1 and 2 list the mandatory courses for both
+          routes, so keep only the ones for your route (standard 1P or alternate 1PX).
+        </p>
+      )}
+
       {preYears.length > 0 && (
         <CreditMeter
           label={preLabel}
@@ -128,6 +142,8 @@ export default function ProgrammeView({ programme, setProgramme }: Props) {
             canRemove={active.length > 1}
             creditTarget={isPreHonours(year) ? null : HONOURS_YEAR_TARGET}
             searchFilter={isGeneral ? undefined : csYearFilter(yearNum(year) || i + 1)}
+            searchAutoExpand={!isGeneral && yearNum(year) === 5}
+            takenBaseNames={takenBaseNames}
             onChange={(y) => updateYear(year.id, y)}
             onRemove={() => removeYear(year.id)}
           />
@@ -152,6 +168,7 @@ export default function ProgrammeView({ programme, setProgramme }: Props) {
       </div>
 
       <section className="panel panel--result">
+        {!isGeneral && <DegreeRules programme={active} />}
         <div className="panel-head">
           <h2>Projected classification</h2>
         </div>

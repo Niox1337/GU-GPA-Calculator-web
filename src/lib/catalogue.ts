@@ -49,12 +49,14 @@ export const CS_YEAR3_CODES = new Set([
 
 /**
  * Catalogue search filter for a Computing Science programme year (1-based):
- * years 1-2 show levels 1-2, year 3 shows only the year-3 allow-list, year 4+
- * shows levels 4-5 within School of Computing Science.
+ * years 1-2 show levels 1-2, year 3 shows only the year-3 allow-list, year 5
+ * shows level M (level 5) only, year 4 shows levels 4-5, all within School of
+ * Computing Science.
  */
 export function csYearFilter(year: number): (c: CatalogueCourse) => boolean {
   if (year <= 2) return (c) => c.level <= 2
   if (year === 3) return (c) => CS_YEAR3_CODES.has(c.code)
+  if (year === 5) return (c) => c.level === 5 && c.school === 'School of Computing Science'
   return (c) => c.level >= 4 && c.school === 'School of Computing Science'
 }
 
@@ -119,6 +121,49 @@ export function strandProgress(picked: Set<string>): StrandProgress[] {
     pickedOptional: info.optional.filter((n) => picked.has(n.toLowerCase())).length,
     compulsory: info.compulsory.map((name) => ({ name, picked: picked.has(name.toLowerCase()) })),
   }))
+}
+
+/**
+ * Identity of a course ignoring its honours/masters variant, so the (H) and (M)
+ * forms of the same course share one key. Used to stop a course being taken
+ * twice (or in both variants) across years.
+ */
+export function courseBaseName(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/\s*\(([hm])\)(\s+for\s+msci?)?\s*$/, '') // "(H)", "(M)", "(M) for MSci"
+    .replace(/\s+for\s+msci?\s*$/, '') // "for MSc" / "for MSci"
+    .replace(/\s+[hm]\s*$/, '') // trailing " H" / " M"
+    .trim()
+}
+
+const COURSE_BY_NAME = new Map(COURSE_CATALOGUE.map((c) => [c.name.toLowerCase(), c]))
+
+export const RMT_NAME = 'Research Methods And Techniques (M) for MSci'
+export const MSCI_PROJECT_NAME = 'MSci Research Proposal and Project'
+
+export interface CsRuleCheck {
+  /** At least one Information Security strand course is picked (BSc honours rule). */
+  hasSecurity: boolean
+  /** Research Methods and Techniques is picked (MSci rule). */
+  hasRmt: boolean
+  /** The level 5 MSci project is picked. */
+  hasProject: boolean
+  /** Total credits of picked courses at level M (level 5). */
+  levelMCredits: number
+}
+
+/** Check picked courses (name + planned credit) against the CS honours and MSci rules. */
+export function checkCsRules(picked: { name: string; credit: number }[]): CsRuleCheck {
+  const r: CsRuleCheck = { hasSecurity: false, hasRmt: false, hasProject: false, levelMCredits: 0 }
+  for (const p of picked) {
+    const key = p.name.toLowerCase()
+    if (STRANDS_BY_NAME.get(key)?.includes('Information Security')) r.hasSecurity = true
+    if (key === RMT_NAME.toLowerCase()) r.hasRmt = true
+    if (key === MSCI_PROJECT_NAME.toLowerCase()) r.hasProject = true
+    if (COURSE_BY_NAME.get(key)?.level === 5) r.levelMCredits += p.credit
+  }
+  return r
 }
 
 export interface LevelGroup {

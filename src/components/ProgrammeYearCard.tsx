@@ -2,7 +2,7 @@ import { useState } from "react";
 import type { ProgrammeYear, Term, YearCourse } from "../lib";
 import { GRADES, computeYear, coursesInTerm, gradePoint, yearCreditTotal } from "../lib";
 import type { CatalogueCourse } from "../lib/catalogue";
-import { STRANDS_BY_NAME } from "../lib/catalogue";
+import { STRANDS_BY_NAME, courseBaseName } from "../lib/catalogue";
 import CourseSearch from "./CourseSearch";
 import StrandTags from "./StrandTags";
 import CreditMeter from "./CreditMeter";
@@ -18,6 +18,10 @@ interface Props {
   creditTarget: number | null;
   /** Optional restriction on which catalogue courses the search offers. */
   searchFilter?: (course: CatalogueCourse) => boolean;
+  /** Expand the search tree automatically (for tightly filtered years). */
+  searchAutoExpand?: boolean;
+  /** Variant-agnostic base names of courses taken anywhere in the programme. */
+  takenBaseNames?: Set<string>;
 }
 
 const SEMESTERS: { key: "s1" | "s2"; label: string; short: string }[] = [
@@ -43,6 +47,8 @@ export default function ProgrammeYearCard({
   index,
   creditTarget,
   searchFilter,
+  searchAutoExpand,
+  takenBaseNames,
 }: Props) {
   const [searchOpen, setSearchOpen] = useState(false);
 
@@ -67,7 +73,7 @@ export default function ProgrammeYearCard({
 
   const result = computeYear(year.courses);
   const ready = result.countedCount > 0;
-  const addedNames = new Set(year.courses.map((c) => c.name.toLowerCase()));
+  const taken = takenBaseNames ?? new Set(year.courses.map((c) => courseBaseName(c.name)));
 
   return (
     <section className="panel year-row" aria-label={`${year.name} courses`}>
@@ -138,9 +144,11 @@ export default function ProgrammeYearCard({
                             <span className="course-name">
                               {c.name}
                               {c.term === "both" && <span className="course-term-tag">Both</span>}
-                              <StrandTags strands={STRANDS_BY_NAME.get(c.name.toLowerCase()) ?? []} />
                             </span>
                             <span className="course-credit">{c.credit} credits</span>
+                            <div className="course-strands">
+                              <StrandTags strands={STRANDS_BY_NAME.get(c.name.toLowerCase()) ?? []} />
+                            </div>
                           </div>
                           <div className="course-grade">
                             <label className="sr-only" htmlFor={`py-${year.id}-${sem.key}-grade-${c.id}`}>
@@ -183,8 +191,9 @@ export default function ProgrammeYearCard({
           <CourseSearch
             onClose={() => setSearchOpen(false)}
             onAdd={addFromCatalogue}
-            isAdded={(c) => addedNames.has(c.name.toLowerCase())}
+            isAdded={(c) => taken.has(courseBaseName(c.name))}
             filter={searchFilter}
+            autoExpand={searchAutoExpand}
           />
         )}
       </div>
