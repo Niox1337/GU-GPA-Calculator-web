@@ -2,15 +2,18 @@ import type { Dispatch, SetStateAction } from "react";
 import type { ProgrammeYear } from "../lib";
 import {
   HONOURS_YEAR_TARGET,
-  PRE_HONOURS_TARGET,
   PRE_HONOURS_YEARS,
   makeComputingScienceProgramme,
   makeDefaultProgramme,
   makeYear,
-  preHonoursCredits,
+  yearCreditTotal,
 } from "../lib";
+import { newId } from "../lib";
 import { usePersistentState } from "../hooks/usePersistentState";
-import { csYearFilter } from "../lib/catalogue";
+import { csYearFilter, COURSE_CATALOGUE } from "../lib/catalogue";
+
+// MSci research project, auto-added to a Computing Science Year 5.
+const MSCI_PROJECT_CODE = "COMPSCI5073P";
 import CreditMeter from "./CreditMeter";
 import DegreeSummary from "./DegreeSummary";
 import ProgrammeYearCard from "./ProgrammeYearCard";
@@ -41,7 +44,24 @@ export default function ProgrammeView({ programme, setProgramme }: Props) {
 
   const updateYear = (id: string, year: ProgrammeYear) =>
     setActive((prev) => prev.map((y) => (y.id === id ? year : y)));
-  const addYear = () => setActive((prev) => [...prev, makeYear(`Year ${prev.length + 1}`)]);
+  const addYear = () =>
+    setActive((prev) => {
+      const highest = prev.reduce((max, y) => {
+        const n = Number(y.name.match(/\d+/)?.[0]);
+        return n > max ? n : max;
+      }, 0);
+      const next = highest + 1;
+      const year = makeYear(`Year ${next}`);
+      if (!isGeneral && next === 5) {
+        const c = COURSE_CATALOGUE.find((x) => x.code === MSCI_PROJECT_CODE);
+        if (c) {
+          year.courses = [
+            { id: newId(), name: c.name, credit: String(c.credit), grade: "", term: c.semester ?? "both" },
+          ];
+        }
+      }
+      return [...prev, year];
+    });
   const removeYear = (id: string) =>
     setActive((prev) => (prev.length > 1 ? prev.filter((y) => y.id !== id) : prev));
   const clearCourses = () =>
@@ -50,7 +70,18 @@ export default function ProgrammeView({ programme, setProgramme }: Props) {
     setActive(isGeneral ? makeDefaultProgramme() : makeComputingScienceProgramme());
 
   const hasData = active.some((y) => y.courses.length > 0);
-  const preHonoursSpan = Math.min(PRE_HONOURS_YEARS, active.length);
+
+  // Pre-honours years are the ones numbered 1..PRE_HONOURS_YEARS (by name, not
+  // position), so deleting Year 1 leaves Year 2 on its own 120 target.
+  const yearNum = (y: ProgrammeYear) => Number(y.name.match(/\d+/)?.[0]) || 0;
+  const isPreHonours = (y: ProgrammeYear) => {
+    const n = yearNum(y);
+    return n >= 1 && n <= PRE_HONOURS_YEARS;
+  };
+  const preYears = active.filter(isPreHonours);
+  const preNums = preYears.map(yearNum).sort((a, b) => a - b);
+  const preLabel =
+    preNums.length > 1 ? `Years ${preNums[0]}-${preNums[preNums.length - 1]}` : `Year ${preNums[0]}`;
 
   return (
     <div className="programme-layout">
@@ -80,11 +111,11 @@ export default function ProgrammeView({ programme, setProgramme }: Props) {
         projected classification and are normalised to their total.
       </p>
 
-      {active.length > 0 && (
+      {preYears.length > 0 && (
         <CreditMeter
-          label={preHonoursSpan > 1 ? `Years 1-${preHonoursSpan}` : "Year 1"}
-          planned={preHonoursCredits(active)}
-          target={PRE_HONOURS_TARGET}
+          label={preLabel}
+          planned={preYears.reduce((s, y) => s + yearCreditTotal(y), 0)}
+          target={preYears.length * HONOURS_YEAR_TARGET}
         />
       )}
 
@@ -95,8 +126,8 @@ export default function ProgrammeView({ programme, setProgramme }: Props) {
             year={year}
             index={i}
             canRemove={active.length > 1}
-            creditTarget={i >= PRE_HONOURS_YEARS ? HONOURS_YEAR_TARGET : null}
-            searchFilter={isGeneral ? undefined : csYearFilter(i + 1)}
+            creditTarget={isPreHonours(year) ? null : HONOURS_YEAR_TARGET}
+            searchFilter={isGeneral ? undefined : csYearFilter(yearNum(year) || i + 1)}
             onChange={(y) => updateYear(year.id, y)}
             onRemove={() => removeYear(year.id)}
           />
