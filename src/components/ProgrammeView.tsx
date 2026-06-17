@@ -10,6 +10,7 @@ import {
   preHonoursCredits,
 } from "../lib";
 import { usePersistentState } from "../hooks/usePersistentState";
+import { csYearFilter } from "../lib/catalogue";
 import CreditMeter from "./CreditMeter";
 import DegreeSummary from "./DegreeSummary";
 import ProgrammeYearCard from "./ProgrammeYearCard";
@@ -94,6 +95,7 @@ export default function ProgrammeView({ programme, setProgramme }: Props) {
             index={i}
             canRemove={active.length > 1}
             creditTarget={i >= PRE_HONOURS_YEARS ? HONOURS_YEAR_TARGET : null}
+            searchFilter={isGeneral ? undefined : csYearFilter(i + 1)}
             onChange={(y) => updateYear(year.id, y)}
             onRemove={() => removeYear(year.id)}
           />

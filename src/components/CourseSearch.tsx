@@ -10,6 +10,8 @@ interface Props {
   onAdd: (courses: CatalogueCourse[]) => void;
   /** Whether a catalogue course is already in the list, so it shows as added. */
   isAdded: (course: CatalogueCourse) => boolean;
+  /** Optional restriction on which catalogue courses are searchable. */
+  filter?: (course: CatalogueCourse) => boolean;
 }
 
 type Tree = typeof CATALOGUE_TREE;
@@ -35,9 +37,11 @@ const LEVEL_LABEL: Record<number, string> = {
 };
 
 /** Multi-select catalogue picker dialog, shared by every course list. */
-export default function CourseSearch({ onClose, onAdd, isAdded }: Props) {
+export default function CourseSearch({ onClose, onAdd, isAdded, filter }: Props) {
   const [query, setQuery] = useState("");
-  const [openSchools, setOpenSchools] = useState<Set<string>>(new Set());
+  const [openSchools, setOpenSchools] = useState<Set<string>>(
+    () => new Set(["School of Computing Science"]),
+  );
   const [openLevels, setOpenLevels] = useState<Set<string>>(new Set());
   // Catalogue courses ticked in the picker, keyed by their unique code.
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -75,14 +79,15 @@ export default function CourseSearch({ onClose, onAdd, isAdded }: Props) {
     });
   }
 
-  // Filter by course name or code. An active query auto-expands matching groups.
+  // Restrict the searchable set first (e.g. a Computing Science year), then by query.
+  const base = filter ? filterTree(CATALOGUE_TREE, filter) : CATALOGUE_TREE;
   const q = query.trim().toLowerCase();
   const tree = q
     ? filterTree(
-        CATALOGUE_TREE,
+        base,
         (c) => c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q),
       )
-    : CATALOGUE_TREE;
+    : base;
 
   const totalResults = tree.reduce((n, s) => n + s.total, 0);
   const isSchoolOpen = (school: string) => q !== "" || openSchools.has(school);
