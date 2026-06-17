@@ -14,6 +14,8 @@ import { csYearFilter, courseBaseName, COURSE_CATALOGUE } from "../lib/catalogue
 
 // MSci research project, auto-added to a Computing Science Year 5.
 const MSCI_PROJECT_CODE = "COMPSCI5073P";
+// MSci classification weighting by year number.
+const MSCI_YEAR_WEIGHTS: Record<number, number> = { 3: 24, 4: 36, 5: 40 };
 import CreditMeter from "./CreditMeter";
 import DegreeSummary from "./DegreeSummary";
 import ProgrammeYearCard from "./ProgrammeYearCard";
@@ -60,6 +62,11 @@ export default function ProgrammeView({ programme, setProgramme }: Props) {
             { id: newId(), name: c.name, credit: String(c.credit), grade: "", term: c.semester ?? "both" },
           ];
         }
+        // MSci classification splits years 3/4/5 as 24/36/40.
+        return [...prev, year].map((y) => {
+          const w = MSCI_YEAR_WEIGHTS[Number(y.name.match(/\d+/)?.[0])];
+          return w != null ? { ...y, weight: w } : y;
+        });
       }
       return [...prev, year];
     });

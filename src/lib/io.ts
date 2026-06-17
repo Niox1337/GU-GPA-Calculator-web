@@ -21,7 +21,7 @@ export interface DataBundle {
 }
 
 export const DEFAULT_HONOURS_WEIGHTS = [40, 60]
-export const DEFAULT_IM_WEIGHTS = [20, 30, 50]
+export const DEFAULT_IM_WEIGHTS = [24, 36, 40]
 export const DEFAULT_SUBJECT_WEIGHTS = [50, 50]
 
 export const makeDefaultJointSubjects = (): JointSubject[] => [
