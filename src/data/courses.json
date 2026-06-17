@@ -4896,811 +4896,1254 @@
       "name": "Computing Science - 1CT Introduction to Computational Thinking",
       "code": "COMPSCI1016",
       "credit": 20,
-      "level": 1
+      "level": 1,
+      "semester": "s1"
     },
     {
       "name": "Computing Science - 1S Systems",
       "code": "COMPSCI1018",
       "credit": 10,
-      "level": 1
+      "level": 1,
+      "semester": "s2"
     },
     {
       "name": "Computing Science 1F - Computing Fundamentals",
       "code": "COMPSCI1006",
       "credit": 10,
-      "level": 1
+      "level": 1,
+      "semester": "s1"
     },
     {
       "name": "Computing Science 1P (Half Course)",
       "code": "COMPSCI1005",
       "credit": 10,
-      "level": 1
+      "level": 1,
+      "semester": "s1"
     },
     {
       "name": "Computing Science 1P (Standard Route)",
       "code": "COMPSCI1001",
       "credit": 20,
-      "level": 1
+      "level": 1,
+      "semester": "both"
     },
     {
       "name": "Computing Science 1PX (Alternate Route)",
       "code": "COMPSCI1017",
       "credit": 10,
-      "level": 1
+      "level": 1,
+      "semester": "s2"
     },
     {
       "name": "Foundation Mathematics for Computing Science and Software Engineering 1",
       "code": "COMPSCI1028",
       "credit": 0,
-      "level": 1
+      "level": 1,
+      "semester": "summer"
     },
     {
       "name": "Foundations of Professional Software Engineering",
       "code": "COMPSCI1019",
       "credit": 30,
-      "level": 1
+      "level": 1,
+      "semester": "both"
     },
     {
       "name": "How to Learn a New Language",
       "code": "COMPSCI1020",
       "credit": 30,
-      "level": 1
+      "level": 1,
+      "semester": "both"
     },
     {
       "name": "Introduction to Programming",
       "code": "COMPSCI1027",
       "credit": 0,
-      "level": 1
+      "level": 1,
+      "semester": "summer"
     },
     {
       "name": "Object Oriented Design",
       "code": "COMPSCI1031",
       "credit": 10,
-      "level": 1
+      "level": 1,
+      "semester": "s2"
     },
     {
       "name": "Spatial Skills Training 1",
       "code": "COMPSCI1026",
       "credit": 0,
-      "level": 1
+      "level": 1,
+      "semester": "s1"
     },
     {
       "name": "Web Application Systems",
       "code": "COMPSCI1023",
       "credit": 10,
-      "level": 1
+      "level": 1,
+      "semester": "s2"
     },
     {
       "name": "Workplace Assessment Year 1",
       "code": "COMPSCI1024",
       "credit": 20,
-      "level": 1
+      "level": 1,
+      "semester": "summer"
     },
     {
       "name": "Advanced Professional Software Engineering",
       "code": "COMPSCI2025",
       "credit": 10,
-      "level": 2
+      "level": 2,
+      "semester": "s2"
     },
     {
       "name": "Algorithmic Foundations 2",
       "code": "COMPSCI2003",
       "credit": 10,
-      "level": 2
+      "level": 2,
+      "semester": "s1"
     },
     {
       "name": "Algorithmics",
       "code": "COMPSCI2026",
       "credit": 10,
-      "level": 2
+      "level": 2,
+      "semester": "s2"
     },
     {
       "name": "Algorithms & Data Structures 2",
       "code": "COMPSCI2007",
       "credit": 10,
-      "level": 2
+      "level": 2,
+      "semester": "s2"
     },
     {
       "name": "Computer Architecture and Network Systems",
       "code": "COMPSCI2027",
       "credit": 20,
-      "level": 2
+      "level": 2,
+      "semester": "s2"
     },
     {
       "name": "Data Science Fundamentals",
       "code": "COMPSCI2028",
       "credit": 10,
-      "level": 2
+      "level": 2,
+      "semester": "s2"
     },
     {
       "name": "Data Storage and Retrieval",
       "code": "COMPSCI2029",
       "credit": 10,
-      "level": 2
+      "level": 2,
+      "semester": "s1"
     },
     {
       "name": "Introduction to Object Oriented Programming",
       "code": "COMPSCI2001",
       "credit": 10,
-      "level": 2
+      "level": 2,
+      "semester": "s1"
     },
     {
       "name": "Networks and Operating Systems Essentials 2",
       "code": "COMPSCI2024",
       "credit": 10,
-      "level": 2
+      "level": 2,
+      "semester": "s1"
     },
     {
       "name": "Object-Oriented Software Engineering 2",
       "code": "COMPSCI2008",
       "credit": 10,
-      "level": 2
+      "level": 2,
+      "semester": "s2"
     },
     {
       "name": "Practical Algorithms",
       "code": "COMPSCI1021",
       "credit": 20,
-      "level": 2
+      "level": 2,
+      "semester": "both"
     },
     {
       "name": "Systems Programming",
       "code": "COMPSCI2030",
       "credit": 10,
-      "level": 2
+      "level": 2,
+      "semester": "both"
     },
     {
       "name": "User Interaction",
       "code": "COMPSCI2031",
       "credit": 10,
-      "level": 2
+      "level": 2,
+      "semester": "s2"
     },
     {
       "name": "Web Application Development 2",
       "code": "COMPSCI2021",
       "credit": 10,
-      "level": 2
+      "level": 2,
+      "semester": "s2"
     },
     {
       "name": "Workplace Assessment Year 2",
       "code": "COMPSCI2033",
       "credit": 40,
-      "level": 2
+      "level": 2,
+      "semester": "summer"
     },
     {
       "name": "Professional Issues in the Workplace",
       "code": "COMPSCI3012",
       "credit": 10,
-      "level": 3
+      "level": 3,
+      "semester": "s1"
     },
     {
       "name": "Team Project 3",
       "code": "COMPSCI3004",
       "credit": 30,
-      "level": 3
+      "level": 3,
+      "semester": "both"
     },
     {
       "name": "Workplace Assessment Year 3",
       "code": "COMPSCI3011",
       "credit": 60,
-      "level": 3
+      "level": 3,
+      "semester": "both"
     },
     {
       "name": "Advanced Networked Systems (H)",
       "code": "COMPSCI4091",
       "credit": 10,
-      "level": 4
+      "level": 4,
+      "semester": "s2",
+      "specialisms": [
+        {
+          "strand": "Parallel and Distributed Systems",
+          "requirement": "optional"
+        }
+      ]
     },
     {
       "name": "Advanced Systems Programming (H)",
       "code": "COMPSCI4089",
       "credit": 10,
-      "level": 4
+      "level": 4,
+      "semester": "s2",
+      "specialisms": [
+        {
+          "strand": "Parallel and Distributed Systems",
+          "requirement": "optional"
+        }
+      ]
     },
     {
       "name": "Algorithmics I (H)",
       "code": "COMPSCI4009",
       "credit": 10,
-      "level": 4
+      "level": 4,
+      "semester": "s1"
     },
     {
       "name": "Algorithmics II (H)",
       "code": "COMPSCI4003",
       "credit": 10,
-      "level": 4
+      "level": 4,
+      "semester": "s1",
+      "specialisms": [
+        {
+          "strand": "Theoretical Computer Science",
+          "requirement": "optional"
+        }
+      ]
     },
     {
       "name": "Artificial Intelligence (H)",
       "code": "COMPSCI4004",
       "credit": 10,
-      "level": 4
+      "level": 4,
+      "semester": "s1",
+      "specialisms": [
+        {
+          "strand": "Data Management",
+          "requirement": "optional"
+        }
+      ]
     },
     {
       "name": "Big Data: Systems, Programming, and Management (H)",
       "code": "COMPSCI4064",
       "credit": 10,
-      "level": 4
+      "level": 4,
+      "semester": "s2",
+      "specialisms": [
+        {
+          "strand": "Data Management",
+          "requirement": "optional"
+        }
+      ]
     },
     {
       "name": "Cloud Systems (H)",
       "code": "COMPSCI4106",
       "credit": 10,
-      "level": 4
+      "level": 4,
+      "semester": "s2",
+      "specialisms": [
+        {
+          "strand": "Parallel and Distributed Systems",
+          "requirement": "optional"
+        }
+      ]
     },
     {
       "name": "Coaching Software Teams (H)",
       "code": "COMPSCI4094",
       "credit": 10,
-      "level": 4
+      "level": 4,
+      "semester": "both"
     },
     {
       "name": "Computational Social Intelligence (H)",
       "code": "COMPSCI4080",
       "credit": 10,
-      "level": 4
+      "level": 4,
+      "semester": "s1",
+      "specialisms": [
+        {
+          "strand": "Human Computer Interaction",
+          "requirement": "optional"
+        }
+      ]
     },
     {
       "name": "Computer Architecture (H)",
       "code": "COMPSCI4007",
       "credit": 10,
-      "level": 4
+      "level": 4,
+      "semester": "s1",
+      "specialisms": [
+        {
+          "strand": "Parallel and Distributed Systems",
+          "requirement": "optional"
+        }
+      ]
     },
     {
       "name": "Computer Vision Methods and Applications (H)",
       "code": "COMPSCI4066",
       "credit": 10,
-      "level": 4
+      "level": 4,
+      "semester": "s1",
+      "specialisms": [
+        {
+          "strand": "Data Management",
+          "requirement": "optional"
+        }
+      ]
     },
     {
       "name": "Computing Science Education Theory and Practice (H)",
       "code": "COMPSCI4100",
       "credit": 10,
-      "level": 4
+      "level": 4,
+      "semester": "s2"
     },
     {
       "name": "Cyber Security Fundamentals (H)",
       "code": "COMPSCI4062",
       "credit": 10,
-      "level": 4
+      "level": 4,
+      "semester": "s2",
+      "specialisms": [
+        {
+          "strand": "Information Security",
+          "requirement": "compulsory"
+        }
+      ]
     },
     {
       "name": "Data Fundamentals (H)",
       "code": "COMPSCI4073",
       "credit": 10,
-      "level": 4
+      "level": 4,
+      "semester": "s1"
     },
     {
       "name": "Data Product Engineering H",
       "code": "COMPSCI4107P",
       "credit": 10,
-      "level": 4
+      "level": 4,
+      "semester": "s1"
     },
     {
       "name": "Database Systems (H)",
       "code": "COMPSCI4013",
       "credit": 10,
-      "level": 4
+      "level": 4,
+      "semester": "s2",
+      "specialisms": [
+        {
+          "strand": "Data Management",
+          "requirement": "compulsory"
+        }
+      ]
     },
     {
       "name": "Distributed and Parallel Technologies (H)",
       "code": "COMPSCI4082",
       "credit": 10,
-      "level": 4
+      "level": 4,
+      "semester": "s1",
+      "specialisms": [
+        {
+          "strand": "Parallel and Distributed Systems",
+          "requirement": "optional"
+        }
+      ]
     },
     {
       "name": "Functional Programming (H)",
       "code": "COMPSCI4021",
       "credit": 10,
-      "level": 4
+      "level": 4,
+      "semester": "s1",
+      "specialisms": [
+        {
+          "strand": "Parallel and Distributed Systems",
+          "requirement": "optional"
+        },
+        {
+          "strand": "Theoretical Computer Science",
+          "requirement": "optional"
+        }
+      ]
     },
     {
       "name": "Human-centred Systems Design and Evaluation (H)",
       "code": "COMPSCI4014",
       "credit": 10,
-      "level": 4
+      "level": 4,
+      "semester": "s1"
     },
     {
       "name": "Human-Computer Interaction (H)",
       "code": "COMPSCI4023",
       "credit": 10,
-      "level": 4
+      "level": 4,
+      "semester": "s1",
+      "specialisms": [
+        {
+          "strand": "Human Computer Interaction",
+          "requirement": "optional"
+        }
+      ]
     },
     {
       "name": "Individual Project (H) (Combined)",
       "code": "COMPSCI4024P",
       "credit": 20,
-      "level": 4
+      "level": 4,
+      "semester": "both"
     },
     {
       "name": "Individual Project (H) (Single)",
       "code": "COMPSCI4025P",
       "credit": 40,
-      "level": 4
+      "level": 4,
+      "semester": "both"
     },
     {
       "name": "Information Retrieval (H)",
       "code": "COMPSCI4069",
       "credit": 10,
-      "level": 4
+      "level": 4,
+      "semester": "s2",
+      "specialisms": [
+        {
+          "strand": "Data Management",
+          "requirement": "optional"
+        }
+      ]
     },
     {
       "name": "Machine Learning (H)",
       "code": "COMPSCI4061",
       "credit": 10,
-      "level": 4
+      "level": 4,
+      "semester": "s1",
+      "specialisms": [
+        {
+          "strand": "Data Management",
+          "requirement": "optional"
+        },
+        {
+          "strand": "Theoretical Computer Science",
+          "requirement": "optional"
+        }
+      ]
     },
     {
       "name": "Mobile Human-Computer Interaction (H)",
       "code": "COMPSCI4068",
       "credit": 10,
-      "level": 4
+      "level": 4,
+      "semester": "s2",
+      "specialisms": [
+        {
+          "strand": "Human Computer Interaction",
+          "requirement": "optional"
+        }
+      ]
     },
     {
       "name": "Networked Systems (H)",
       "code": "COMPSCI4012",
       "credit": 10,
-      "level": 4
+      "level": 4,
+      "semester": "s2",
+      "specialisms": [
+        {
+          "strand": "Parallel and Distributed Systems",
+          "requirement": "compulsory"
+        }
+      ]
     },
     {
       "name": "Operating Systems (H)",
       "code": "COMPSCI4011",
       "credit": 10,
-      "level": 4
+      "level": 4,
+      "semester": "s2",
+      "specialisms": [
+        {
+          "strand": "Parallel and Distributed Systems",
+          "requirement": "compulsory"
+        }
+      ]
     },
     {
       "name": "Patient Centred Health-Technologies",
       "code": "COMPSCI4101",
       "credit": 10,
-      "level": 4
+      "level": 4,
+      "semester": "s1",
+      "specialisms": [
+        {
+          "strand": "Human Computer Interaction",
+          "requirement": "optional"
+        }
+      ]
     },
     {
       "name": "Professional Skills and Issues (H)",
       "code": "COMPSCI4038",
       "credit": 10,
-      "level": 4
+      "level": 4,
+      "semester": "s1"
     },
     {
       "name": "Professional Software Development (H)",
       "code": "COMPSCI4015",
       "credit": 10,
-      "level": 4
+      "level": 4,
+      "semester": "both"
     },
     {
       "name": "Programming",
       "code": "COMPSCI4039",
       "credit": 20,
-      "level": 4
+      "level": 4,
+      "semester": "s1"
     },
     {
       "name": "Programming and Systems Development (H)",
       "code": "COMPSCI4084",
       "credit": 20,
-      "level": 4
+      "level": 4,
+      "semester": "s1"
     },
     {
       "name": "Programming Languages (H)",
       "code": "COMPSCI4016",
       "credit": 10,
-      "level": 4
+      "level": 4,
+      "semester": "s2",
+      "specialisms": [
+        {
+          "strand": "Theoretical Computer Science",
+          "requirement": "optional"
+        }
+      ]
     },
     {
       "name": "Quantum Computing H",
       "code": "COMPSCI4105",
       "credit": 10,
-      "level": 4
+      "level": 4,
+      "semester": "s2",
+      "specialisms": [
+        {
+          "strand": "Theoretical Computer Science",
+          "requirement": "optional"
+        }
+      ]
     },
     {
       "name": "Robotics Foundations (H)",
       "code": "COMPSCI4076",
       "credit": 10,
-      "level": 4
+      "level": 4,
+      "semester": "s2",
+      "specialisms": [
+        {
+          "strand": "Data Management",
+          "requirement": "optional"
+        }
+      ]
     },
     {
       "name": "Software Engineering Full Year Industrial Placement H",
       "code": "COMPSCI4079",
       "credit": 120,
-      "level": 4
+      "level": 4,
+      "semester": "both"
     },
     {
       "name": "Software Engineering Summer Placement (H)",
       "code": "COMPSCI4046",
       "credit": 10,
-      "level": 4
+      "level": 4,
+      "semester": "summer"
     },
     {
       "name": "Software Product Release Engineering (H)",
       "code": "COMPSCI4102",
       "credit": 10,
-      "level": 4
+      "level": 4,
+      "semester": "s2",
+      "specialisms": [
+        {
+          "strand": "Parallel and Distributed Systems",
+          "requirement": "optional"
+        }
+      ]
     },
     {
       "name": "Startup Growth Engineering (H)",
       "code": "COMPSCI4087",
       "credit": 10,
-      "level": 4
+      "level": 4,
+      "semester": "s2"
     },
     {
       "name": "Systems And Networks",
       "code": "COMPSCI4043",
       "credit": 10,
-      "level": 4
+      "level": 4,
+      "semester": "s1"
     },
     {
       "name": "Systems Programming (H)",
       "code": "COMPSCI4081",
       "credit": 10,
-      "level": 4
+      "level": 4,
+      "semester": "s1"
     },
     {
       "name": "Team Project (H)",
       "code": "COMPSCI4047",
       "credit": 30,
-      "level": 4
+      "level": 4,
+      "semester": "both"
     },
     {
       "name": "Team Project ESE (H)",
       "code": "COMPSCI4044",
       "credit": 30,
-      "level": 4
+      "level": 4,
+      "semester": "both"
     },
     {
       "name": "Team Project Minor (H)",
       "code": "COMPSCI4070",
       "credit": 10,
-      "level": 4
+      "level": 4,
+      "semester": "both"
     },
     {
       "name": "Text as Data - An Introduction to Document Analytics (H)",
       "code": "COMPSCI4074",
       "credit": 10,
-      "level": 4
+      "level": 4,
+      "semester": "s2",
+      "specialisms": [
+        {
+          "strand": "Data Management",
+          "requirement": "optional"
+        }
+      ]
     },
     {
       "name": "Theory of Computation (H)",
       "code": "COMPSCI4072",
       "credit": 10,
-      "level": 4
+      "level": 4,
+      "semester": "s2",
+      "specialisms": [
+        {
+          "strand": "Theoretical Computer Science",
+          "requirement": "optional"
+        }
+      ]
     },
     {
       "name": "Web Science (H)",
       "code": "COMPSCI4077",
       "credit": 10,
-      "level": 4
+      "level": 4,
+      "semester": "s2",
+      "specialisms": [
+        {
+          "strand": "Data Management",
+          "requirement": "optional"
+        }
+      ]
     },
     {
       "name": "Workplace Assessment Year 4",
       "code": "COMPSCI4085P",
       "credit": 60,
-      "level": 4
+      "level": 4,
+      "semester": "both"
     },
     {
       "name": "Workplace Project Supplement",
       "code": "COMPSCI4093P",
       "credit": 30,
-      "level": 4
+      "level": 4,
+      "semester": "both"
     },
     {
       "name": "Advanced Systems Programming (M)",
       "code": "COMPSCI5083",
       "credit": 10,
-      "level": 5
+      "level": 5,
+      "semester": "s2",
+      "specialisms": [
+        {
+          "strand": "Parallel and Distributed Systems",
+          "requirement": "optional"
+        }
+      ]
     },
     {
       "name": "Algorithms And Data Structures (M)",
       "code": "COMPSCI5004",
       "credit": 10,
-      "level": 5
+      "level": 5,
+      "semester": "s2"
     },
     {
       "name": "Artificial Intelligence (M)",
       "code": "COMPSCI5087",
       "credit": 10,
-      "level": 5
+      "level": 5,
+      "semester": "s1",
+      "specialisms": [
+        {
+          "strand": "Data Management",
+          "requirement": "optional"
+        }
+      ]
     },
     {
       "name": "Big Data: Systems, Programming, and Management (M)",
       "code": "COMPSCI5088",
       "credit": 10,
-      "level": 5
+      "level": 5,
+      "semester": "s2",
+      "specialisms": [
+        {
+          "strand": "Data Management",
+          "requirement": "optional"
+        }
+      ]
     },
     {
       "name": "Cloud Systems (M)",
       "code": "COMPSCI5118",
       "credit": 10,
-      "level": 5
+      "level": 5,
+      "semester": "s2",
+      "specialisms": [
+        {
+          "strand": "Parallel and Distributed Systems",
+          "requirement": "optional"
+        }
+      ]
     },
     {
       "name": "Coaching Software Teams (M)",
       "code": "COMPSCI5113",
       "credit": 10,
-      "level": 5
+      "level": 5,
+      "semester": "both"
     },
     {
       "name": "Computational Game Theory (M)",
       "code": "COMPSCI5116",
       "credit": 10,
-      "level": 5
+      "level": 5,
+      "semester": "s1",
+      "specialisms": [
+        {
+          "strand": "Theoretical Computer Science",
+          "requirement": "optional"
+        }
+      ]
     },
     {
       "name": "Computational Social Intelligence (M)",
       "code": "COMPSCI5095",
       "credit": 10,
-      "level": 5
+      "level": 5,
+      "semester": "s1"
     },
     {
       "name": "Constraint Programming (M)",
       "code": "COMPSCI5006",
       "credit": 10,
-      "level": 5
+      "level": 5,
+      "semester": "s1",
+      "specialisms": [
+        {
+          "strand": "Theoretical Computer Science",
+          "requirement": "optional"
+        }
+      ]
     },
     {
       "name": "Conversational Interfaces (M)",
       "code": "COMPSCI5094",
       "credit": 10,
-      "level": 5
+      "level": 5,
+      "semester": "s2",
+      "specialisms": [
+        {
+          "strand": "Human Computer Interaction",
+          "requirement": "optional"
+        }
+      ]
     },
     {
       "name": "Cryptography and Secure Development (M)",
       "code": "COMPSCI5079",
       "credit": 10,
-      "level": 5
+      "level": 5,
+      "semester": "s2",
+      "specialisms": [
+        {
+          "strand": "Information Security",
+          "requirement": "optional"
+        }
+      ]
     },
     {
       "name": "Cyber Systems Forensics (M)",
       "code": "COMPSCI5080",
       "credit": 10,
-      "level": 5
+      "level": 5,
+      "semester": "s2",
+      "specialisms": [
+        {
+          "strand": "Information Security",
+          "requirement": "optional"
+        }
+      ]
     },
     {
       "name": "CyberSecurity Fundamentals for MSc (M)",
       "code": "COMPSCI5063",
       "credit": 10,
-      "level": 5
+      "level": 5,
+      "semester": "s2"
     },
     {
       "name": "Databases and Data Analytics (M)",
       "code": "COMPSCI5076",
       "credit": 10,
-      "level": 5
+      "level": 5,
+      "semester": "s1"
     },
     {
       "name": "Deep Learning (M)",
       "code": "COMPSCI5085",
       "credit": 10,
-      "level": 5
+      "level": 5,
+      "semester": "s2",
+      "specialisms": [
+        {
+          "strand": "Data Management",
+          "requirement": "optional"
+        }
+      ]
     },
     {
       "name": "Deep Learning for MSc (M)",
       "code": "COMPSCI5103",
       "credit": 10,
-      "level": 5
+      "level": 5,
+      "semester": "s2"
     },
     {
       "name": "Distributed and Parallel Technologies (M)",
       "code": "COMPSCI5084",
       "credit": 10,
-      "level": 5
+      "level": 5,
+      "semester": "s1",
+      "specialisms": [
+        {
+          "strand": "Parallel and Distributed Systems",
+          "requirement": "optional"
+        }
+      ]
     },
     {
       "name": "Emerging Topics in Cyber Security (M)",
       "code": "COMPSCI5110",
       "credit": 10,
-      "level": 5
+      "level": 5,
+      "semester": "s2"
     },
     {
       "name": "Enterprise Cyber Security (M)",
       "code": "COMPSCI5077",
       "credit": 15,
-      "level": 5
+      "level": 5,
+      "semester": "s1"
     },
     {
       "name": "Extended Reality Interaction (M)",
       "code": "COMPSCI5117",
       "credit": 10,
-      "level": 5
+      "level": 5,
+      "semester": "s1",
+      "specialisms": [
+        {
+          "strand": "Human Computer Interaction",
+          "requirement": "optional"
+        }
+      ]
     },
     {
       "name": "Human Computer Interaction (M)",
       "code": "COMPSCI5111",
       "credit": 10,
-      "level": 5
+      "level": 5,
+      "semester": "s1",
+      "specialisms": [
+        {
+          "strand": "Human Computer Interaction",
+          "requirement": "optional"
+        }
+      ]
     },
     {
       "name": "Human Computer Interaction Design and Evaluation (M)",
       "code": "COMPSCI5057",
       "credit": 10,
-      "level": 5
+      "level": 5,
+      "semester": "s2"
     },
     {
       "name": "Human-Centred Security (M)",
       "code": "COMPSCI5060",
       "credit": 10,
-      "level": 5
+      "level": 5,
+      "semester": "s2",
+      "specialisms": [
+        {
+          "strand": "Human Computer Interaction",
+          "requirement": "optional"
+        },
+        {
+          "strand": "Information Security",
+          "requirement": "optional"
+        }
+      ]
     },
     {
       "name": "Information Retrieval (M)",
       "code": "COMPSCI5011",
       "credit": 10,
-      "level": 5
+      "level": 5,
+      "semester": "s2",
+      "specialisms": [
+        {
+          "strand": "Data Management",
+          "requirement": "optional"
+        }
+      ]
     },
     {
       "name": "Information Visualisation (M)",
       "code": "COMPSCI5099",
       "credit": 10,
-      "level": 5
+      "level": 5,
+      "semester": "s2"
     },
     {
       "name": "Internet Technology (M)",
       "code": "COMPSCI5012",
       "credit": 10,
-      "level": 5
+      "level": 5,
+      "semester": "s2"
     },
     {
       "name": "Introduction to Data Science and Systems (M)",
       "code": "COMPSCI5089",
       "credit": 15,
-      "level": 5
+      "level": 5,
+      "semester": "s1"
     },
     {
       "name": "Machine Learning & Artificial Intelligence for Data Scientists (M)",
       "code": "COMPSCI5100",
       "credit": 15,
-      "level": 5
+      "level": 5,
+      "semester": "s1"
     },
     {
       "name": "Machine Learning (M)",
       "code": "COMPSCI5014",
       "credit": 10,
-      "level": 5
+      "level": 5,
+      "semester": "s1",
+      "specialisms": [
+        {
+          "strand": "Data Management",
+          "requirement": "optional"
+        },
+        {
+          "strand": "Theoretical Computer Science",
+          "requirement": "optional"
+        }
+      ]
     },
     {
       "name": "Mobile Human-Computer Interaction (M)",
       "code": "COMPSCI5015",
       "credit": 10,
-      "level": 5
+      "level": 5,
+      "semester": "s2",
+      "specialisms": [
+        {
+          "strand": "Human Computer Interaction",
+          "requirement": "optional"
+        }
+      ]
     },
     {
       "name": "Mobile Human-Computer Interaction for MSc",
       "code": "COMPSCI5112",
       "credit": 10,
-      "level": 5
+      "level": 5,
+      "semester": "s2"
     },
     {
       "name": "MSc IT+ Team Project (M)",
       "code": "COMPSCI5074",
       "credit": 10,
-      "level": 5
+      "level": 5,
+      "semester": "s2"
     },
     {
       "name": "MSc Project for Computing Science (SOCIAL)",
       "code": "COMPSCI5098P",
       "credit": 60,
-      "level": 5
+      "level": 5,
+      "semester": "summer"
     },
     {
       "name": "MSc Project for Computing Science+",
       "code": "COMPSCI5086P",
       "credit": 60,
-      "level": 5
+      "level": 5,
+      "semester": "s1"
     },
     {
       "name": "MSc Project for Information Technology +",
       "code": "COMPSCI5018P",
       "credit": 60,
-      "level": 5
+      "level": 5,
+      "semester": "s1"
     },
     {
       "name": "MSci (Sandwich Year) Software Engineering Individual Project",
       "code": "COMPSCI5082P",
       "credit": 40,
-      "level": 5
+      "level": 5,
+      "semester": "both"
     },
     {
       "name": "MSci Research Proposal and Project",
       "code": "COMPSCI5073P",
       "credit": 80,
-      "level": 5
+      "level": 5,
+      "semester": "both"
     },
     {
       "name": "MSci Research Proposal and Project (Half)",
       "code": "COMPSCI5072P",
       "credit": 40,
-      "level": 5
+      "level": 5,
+      "semester": "both"
     },
     {
       "name": "Principles of Cybersecurity (M)",
       "code": "COMPSCI5120",
       "credit": 15,
-      "level": 5
+      "level": 5,
+      "semester": "s1"
     },
     {
       "name": "Programming for AI",
       "code": "COMPSCI5002",
       "credit": 10,
-      "level": 5
+      "level": 5,
+      "semester": "s2"
     },
     {
       "name": "Project Research Readings In Computing Science (M)",
       "code": "COMPSCI5003",
       "credit": 10,
-      "level": 5
+      "level": 5,
+      "semester": "s1"
     },
     {
       "name": "Research and Professional Skills (M)",
       "code": "COMPSCI5092",
       "credit": 10,
-      "level": 5
+      "level": 5,
+      "semester": "s1"
     },
     {
       "name": "Research Methods And Techniques (M) for MSci",
       "code": "COMPSCI5025",
       "credit": 10,
-      "level": 5
+      "level": 5,
+      "semester": "s1"
     },
     {
       "name": "Secure Systems Programming in Rust (M)",
       "code": "COMPSCI5119",
       "credit": 10,
-      "level": 5
+      "level": 5,
+      "semester": "s2"
     },
     {
       "name": "Secured Software Engineering (M)",
       "code": "COMPSCI5093",
       "credit": 10,
-      "level": 5
+      "level": 5,
+      "semester": "s2",
+      "specialisms": [
+        {
+          "strand": "Information Security",
+          "requirement": "optional"
+        },
+        {
+          "strand": "Parallel and Distributed Systems",
+          "requirement": "optional"
+        }
+      ]
     },
     {
       "name": "Secured Software Engineering for MSc (M)",
       "code": "COMPSCI5104",
       "credit": 10,
-      "level": 5
+      "level": 5,
+      "semester": "s2"
     },
     {
       "name": "Software Engineering (M)",
       "code": "COMPSCI5059",
       "credit": 15,
-      "level": 5
+      "level": 5,
+      "semester": "both"
     },
     {
       "name": "Software Engineering Full Year Placement Review",
       "code": "COMPSCI5101",
       "credit": 10,
-      "level": 5
+      "level": 5,
+      "semester": "s1"
     },
     {
       "name": "Software Product Release Engineering (M)",
       "code": "COMPSCI5115",
       "credit": 10,
-      "level": 5
+      "level": 5,
+      "semester": "s2",
+      "specialisms": [
+        {
+          "strand": "Parallel and Distributed Systems",
+          "requirement": "optional"
+        }
+      ]
     },
     {
       "name": "Text as Data - An Introduction to Document Analytics (M)",
       "code": "COMPSCI5096",
       "credit": 10,
-      "level": 5
+      "level": 5,
+      "semester": "s2",
+      "specialisms": [
+        {
+          "strand": "Data Management",
+          "requirement": "optional"
+        }
+      ]
     },
     {
       "name": "Text as Data for MSc",
       "code": "COMPSCI5106",
       "credit": 10,
-      "level": 5
+      "level": 5,
+      "semester": "s2"
     },
     {
       "name": "Trustworthy Systems: Verification and Synthesis",
       "code": "COMPSCI5123",
       "credit": 10,
-      "level": 5
+      "level": 5,
+      "semester": "s1"
     },
     {
       "name": "Web Science (M)",
       "code": "COMPSCI5078",
       "credit": 10,
-      "level": 5
+      "level": 5,
+      "semester": "s2",
+      "specialisms": [
+        {
+          "strand": "Data Management",
+          "requirement": "optional"
+        }
+      ]
     },
     {
       "name": "Web Science for MSc",
       "code": "COMPSCI5107",
       "credit": 10,
-      "level": 5
+      "level": 5,
+      "semester": "s2"
     }
   ],
   "School of Critical Studies": [
