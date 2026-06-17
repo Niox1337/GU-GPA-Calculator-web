@@ -2,8 +2,8 @@ import { useRef } from 'react'
 import type { ChangeEvent } from 'react'
 import './App.css'
 import uogLogo from './assets/UoG.svg'
-import type { Course, JointSubject } from './lib'
-import { EXAMPLE_COURSES, withIds } from './lib'
+import type { Course, JointSubject, ProgrammeYear } from './lib'
+import { EXAMPLE_COURSES, makeDefaultProgramme, withIds } from './lib'
 import {
   DEFAULT_HONOURS_WEIGHTS,
   DEFAULT_IM_WEIGHTS,
@@ -21,6 +21,7 @@ import { useTheme } from './hooks/useTheme'
 import { useToast } from './hooks/useToast'
 import YearView from './components/YearView'
 import DegreeView from './components/DegreeView'
+import ProgrammeView from './components/ProgrammeView'
 import ProgressionView from './components/ProgressionView'
 import {
   AlertIcon,
@@ -35,7 +36,7 @@ import {
   UploadIcon,
 } from './components/Icons'
 
-type Mode = 'year' | 'degree' | 'progression'
+type Mode = 'year' | 'degree' | 'programme' | 'progression'
 
 const GRADING_SCHEME_URL = 'https://www.gla.ac.uk/media/Media_124293_smxx.pdf'
 const REPO_URL = 'https://github.com/Niox1337/GU-GPA-Calculator-web'
@@ -62,6 +63,10 @@ export default function App() {
     'gpa.jointSubjectWeights',
     DEFAULT_SUBJECT_WEIGHTS,
   )
+  const [programme, setProgramme] = usePersistentState<ProgrammeYear[]>(
+    'gpa.programmeYears',
+    makeDefaultProgramme(),
+  )
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -73,6 +78,7 @@ export default function App() {
     jointSubjectWeights,
     imYears,
     imWeights,
+    programme,
   })
 
   const handleExport = () => {
@@ -105,6 +111,7 @@ export default function App() {
       setJointSubjectWeights(bundle.jointSubjectWeights)
       setImYears(bundle.imYears)
       setImWeights(bundle.imWeights)
+      setProgramme(bundle.programme)
       const count = bundleCount(bundle)
       setToast({ kind: 'success', msg: `Imported ${count} course${count === 1 ? '' : 's'}.` })
     } catch (err) {
@@ -195,6 +202,14 @@ export default function App() {
         </button>
         <button
           role="tab"
+          aria-selected={mode === 'programme'}
+          className={`tab${mode === 'programme' ? ' is-active' : ''}`}
+          onClick={() => setMode('programme')}
+        >
+          Programme
+        </button>
+        <button
+          role="tab"
           aria-selected={mode === 'progression'}
           className={`tab${mode === 'progression' ? ' is-active' : ''}`}
           onClick={() => setMode('progression')}
@@ -206,6 +221,8 @@ export default function App() {
       <main className="app-main">
         {mode === 'year' ? (
           <YearView courses={year} onChange={setYear} />
+        ) : mode === 'programme' ? (
+          <ProgrammeView programme={programme} setProgramme={setProgramme} />
         ) : mode === 'progression' ? (
           <ProgressionView />
         ) : (

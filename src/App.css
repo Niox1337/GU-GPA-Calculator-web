@@ -238,6 +238,8 @@
 
 /* Base narrow container keeps everything stacked so nothing is compressed. */
 .add-form {
+  /* Shared label height so the action buttons can line up with the inputs. */
+  --label-h: 1.15rem;
   display: grid;
   grid-template-columns: 1fr;
   gap: 0.7rem;
@@ -256,10 +258,15 @@
   }
 }
 
-/* Wide container used by the single-year panel keeps everything on one row. */
+/* Wide container: compress the name, widen credits enough for its error text,
+   and centre the whole form within the panel. */
 @container (min-width: 560px) {
   .add-form {
-    grid-template-columns: 1fr 84px auto;
+    grid-template-columns: minmax(0, 16rem) 8.5rem auto;
+    justify-content: center;
+  }
+  .add-form--term {
+    grid-template-columns: minmax(0, 16rem) 8.5rem auto auto;
   }
 }
 .field {
@@ -268,7 +275,10 @@
   gap: 0.3rem;
   min-width: 0;
 }
-.field label {
+.field label,
+.field-label {
+  height: var(--label-h);
+  line-height: var(--label-h);
   font-size: 0.78rem;
   font-weight: 600;
   color: var(--text-muted);
@@ -307,7 +317,10 @@
 @container (min-width: 560px) {
   .add-actions {
     grid-column: auto;
-    align-self: end;
+    /* Sit level with the inputs, not the field bottom, so a validation error
+       growing under an input no longer pushes the buttons down. */
+    align-self: start;
+    margin-top: calc(var(--label-h) + 0.3rem);
   }
   .add-actions .btn {
     flex: 0 0 auto;
@@ -351,9 +364,8 @@
 }
 .course-name {
   font-weight: 650;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  /* Long names wrap to the next line instead of being cut off with an ellipsis. */
+  overflow-wrap: anywhere;
 }
 .course-credit {
   font-size: 0.78rem;
@@ -771,6 +783,172 @@
 .honours-grid .courses {
   grid-template-columns: 1fr;
 }
+
+/* ---------- Programme builder ---------- */
+.programme-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+/* Each year is a full-width row holding its two stacked semesters. */
+.year-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+.year-head {
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+.year-head__meta {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  flex-shrink: 0;
+}
+.year-gpa {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.semesters {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  margin-top: 0.6rem;
+}
+.semester + .semester {
+  padding-top: 1.1rem;
+  border-top: 1px solid var(--border);
+}
+.semester-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+  margin-bottom: 0.7rem;
+}
+.semester-count {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.05rem 0.45rem;
+  letter-spacing: 0;
+}
+.semester-empty {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  padding: 0.2rem 0 0.4rem;
+}
+/* A year row is full width, so its courses lay out as a multi-column grid. */
+.semester .courses {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+/* Semester selector in the year add form. */
+.field--term {
+  align-items: flex-start;
+}
+.term-seg {
+  display: inline-flex;
+  gap: 0.2rem;
+  padding: 0.25rem;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+}
+.term-seg .seg {
+  padding: 0.4rem 0.7rem;
+  font-size: 0.82rem;
+}
+/* "Both" badge marking a course shared across both semesters. */
+.course-term-tag {
+  margin-left: 0.4rem;
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--navy);
+  background: color-mix(in srgb, var(--navy) 12%, transparent);
+  padding: 0.08rem 0.4rem;
+  border-radius: 999px;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+:root[data-theme='dark'] .course-term-tag {
+  color: var(--accent);
+}
+
+.credit-meter {
+  margin: 0.2rem 0 1rem;
+  --meter: var(--text-muted);
+}
+.credit-meter.is-under {
+  --meter: var(--band-c);
+}
+.credit-meter.is-on-target {
+  --meter: var(--success);
+}
+.credit-meter.is-over {
+  --meter: var(--danger);
+}
+.credit-meter__top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+.credit-meter__count {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.credit-meter__note {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--meter);
+}
+.credit-meter__gpa {
+  font-size: 0.74rem;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--text-muted);
+}
+.credit-meter__bar {
+  height: 0.5rem;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.credit-meter__fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--meter);
+  transition: width 0.2s ease;
+}
+
+.programme-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
 .honours-summary {
   display: flex;
   flex-direction: column;

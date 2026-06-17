@@ -1,9 +1,12 @@
 // Import and export of grade data. Exports a portable JSON snapshot of every
-// dataset (single year, plus the Honours and Integrated Masters years and their
-// weights). Imports forgivingly: unknown grades drop to "not taken", blank rows
-// are skipped, and older files using junior/senior still load.
+// dataset (single year, the Honours, Joint, and Integrated Masters years with
+// their weights, and the programme builder years and semesters). Imports forgivingly:
+// unknown grades drop to "not taken", blank rows are skipped, older files using
+// junior/senior still load, and files predating a dataset fall back to defaults.
 import type { Course } from './course'
 import type { JointSubject } from './classification'
+import type { ProgrammeYear, Term, YearCourse } from './programme'
+import { DEFAULT_YEAR_WEIGHTS, makeDefaultProgramme } from './programme'
 import { GRADES } from './grades'
 
 export interface DataBundle {
@@ -14,6 +17,7 @@ export interface DataBundle {
   jointSubjectWeights: number[]
   imYears: Course[][]
   imWeights: number[]
+  programme: ProgrammeYear[]
 }
 
 export const DEFAULT_HONOURS_WEIGHTS = [40, 60]
@@ -85,6 +89,57 @@ function coerceSubjects(raw: unknown): JointSubject[] {
   return [coerceSubject(arr[0], 'Subject X'), coerceSubject(arr[1], 'Subject Y')]
 }
 
+function coerceNumber(raw: unknown, fallback: number): number {
+  const v = Number(raw)
+  return Number.isFinite(v) && v >= 0 ? v : fallback
+}
+
+const VALID_TERMS = new Set<string>(['s1', 's2', 'both'])
+
+function coerceYearCourse(raw: unknown, term: Term): YearCourse | null {
+  const base = coerceCourse(raw)
+  if (!base) return null
+  const t =
+    raw && typeof raw === 'object' && VALID_TERMS.has(String((raw as Record<string, unknown>).term))
+      ? ((raw as Record<string, unknown>).term as Term)
+      : term
+  return { ...base, term: t }
+}
+
+function coerceYearCourses(raw: unknown, term: Term): YearCourse[] {
+  if (!Array.isArray(raw)) return []
+  return raw.map((c) => coerceYearCourse(c, term)).filter((c): c is YearCourse => c !== null)
+}
+
+function coerceYear(raw: unknown, i: number): ProgrammeYear {
+  const r = raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : {}
+  const name = typeof r.name === 'string' && r.name.trim() ? r.name.trim() : `Year ${i + 1}`
+  // Current files keep one tagged course list. Older files that split courses
+  // into a semesters array load Semester 1 and Semester 2 with the matching tag.
+  let courses: YearCourse[]
+  if (Array.isArray(r.courses)) {
+    courses = coerceYearCourses(r.courses, 's1')
+  } else if (Array.isArray(r.semesters)) {
+    courses = [
+      ...coerceYearCourses(r.semesters[0], 's1'),
+      ...coerceYearCourses(r.semesters[1], 's2'),
+    ]
+  } else {
+    courses = []
+  }
+  return {
+    id: newId(),
+    name,
+    courses,
+    weight: coerceNumber(r.weight, DEFAULT_YEAR_WEIGHTS[i] ?? 0),
+  }
+}
+
+function coerceProgramme(raw: unknown): ProgrammeYear[] {
+  if (!Array.isArray(raw) || raw.length === 0) return makeDefaultProgramme()
+  return raw.map((year, i) => coerceYear(year, i))
+}
+
 const strip = (c: Course) => ({ name: c.name, credit: c.credit, grade: c.grade })
 
 /** Serialise the full dataset to a pretty-printed, versioned JSON string. */
@@ -92,7 +147,7 @@ export function buildExport(bundle: DataBundle): string {
   return JSON.stringify(
     {
       app: APP_TAG,
-      version: 2,
+      version: 3,
       exportedAt: new Date().toISOString(),
       data: {
         year: bundle.year.map(strip),
@@ -106,6 +161,11 @@ export function buildExport(bundle: DataBundle): string {
         jointSubjectWeights: bundle.jointSubjectWeights,
         imYears: bundle.imYears.map((y) => y.map(strip)),
         imWeights: bundle.imWeights,
+        programme: bundle.programme.map((y) => ({
+          name: y.name,
+          weight: y.weight,
+          courses: y.courses.map((c) => ({ ...strip(c), term: c.term })),
+        })),
       },
     },
     null,
@@ -119,7 +179,8 @@ export function bundleCount(b: DataBundle): number {
     b.year.length +
     b.honoursYears.reduce((n, y) => n + y.length, 0) +
     b.jointSubjects.reduce((n, s) => n + s.years.reduce((m, y) => m + y.length, 0), 0) +
-    b.imYears.reduce((n, y) => n + y.length, 0)
+    b.imYears.reduce((n, y) => n + y.length, 0) +
+    b.programme.reduce((n, y) => n + y.courses.length, 0)
   )
 }
 
@@ -131,6 +192,7 @@ const emptyBundle = (): DataBundle => ({
   jointSubjectWeights: [...DEFAULT_SUBJECT_WEIGHTS],
   imYears: [[], [], []],
   imWeights: [...DEFAULT_IM_WEIGHTS],
+  programme: makeDefaultProgramme(),
 })
 
 /**
@@ -168,6 +230,9 @@ export function parseImport(text: string): DataBundle {
     bundle.jointSubjectWeights = coerceWeights(data.jointSubjectWeights, DEFAULT_SUBJECT_WEIGHTS)
     bundle.imYears = coerceMatrix(data.imYears, 3)
     bundle.imWeights = coerceWeights(data.imWeights, DEFAULT_IM_WEIGHTS)
+    if (data.programme !== undefined) {
+      bundle.programme = coerceProgramme(data.programme)
+    }
   }
 
   if (bundleCount(bundle) === 0) {

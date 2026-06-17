@@ -10,6 +10,7 @@ import {
   makeDefaultJointSubjects,
   parseImport,
 } from './io'
+import { makeDefaultProgramme, makeYear } from './programme'
 
 const course = (name: string, credit: string, grade: string): Course => ({
   id: name,
@@ -26,6 +27,7 @@ const bundle = (over: Partial<DataBundle> = {}): DataBundle => ({
   jointSubjectWeights: [...DEFAULT_SUBJECT_WEIGHTS],
   imYears: [[], [], []],
   imWeights: [...DEFAULT_IM_WEIGHTS],
+  programme: makeDefaultProgramme(),
   ...over,
 })
 
@@ -55,6 +57,30 @@ describe('buildExport / parseImport', () => {
 
   it('rejects a file with no courses', () => {
     expect(() => parseImport(buildExport(bundle()))).toThrow()
+  })
+
+  it('round-trips programme years with their course terms and weight', () => {
+    const year = {
+      ...makeYear('Year 3', 40),
+      courses: [
+        { ...course('OOP', '20', 'A1'), term: 's1' as const },
+        { ...course('Project', '40', 'B1'), term: 'both' as const },
+      ],
+    }
+    const parsed = parseImport(buildExport(bundle({ programme: [year] })))
+    expect(parsed.programme).toHaveLength(1)
+    expect(parsed.programme[0].name).toBe('Year 3')
+    expect(parsed.programme[0].weight).toBe(40)
+    expect(parsed.programme[0].courses.map((c) => [c.name, c.term])).toEqual([
+      ['OOP', 's1'],
+      ['Project', 'both'],
+    ])
+  })
+
+  it('falls back to the default programme for files that predate it', () => {
+    const legacy = JSON.stringify({ data: { year: [{ name: 'X', credit: 20, grade: 'A1' }] } })
+    const parsed = parseImport(legacy)
+    expect(parsed.programme).toHaveLength(makeDefaultProgramme().length)
   })
 })
 
