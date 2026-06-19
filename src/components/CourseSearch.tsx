@@ -53,8 +53,21 @@ export default function CourseSearch({ onClose, onAdd, isAdded, filter, autoExpa
     () => new Set(["School of Computing Science"]),
   );
   const [openLevels, setOpenLevels] = useState<Set<string>>(new Set());
+  // When sections default to open (search/autoExpand), track the ones the user collapsed.
+  const [closedSchools, setClosedSchools] = useState<Set<string>>(new Set());
+  const [closedLevels, setClosedLevels] = useState<Set<string>>(new Set());
   // Catalogue courses ticked in the picker, keyed by their unique code.
   const [selected, setSelected] = useState<Set<string>>(new Set());
+
+  // Sections default to open while searching or when autoExpand is set.
+  const defaultOpen = autoExpand || query.trim() !== "";
+
+  function flip(set: Set<string>, key: string) {
+    const next = new Set(set);
+    if (next.has(key)) next.delete(key);
+    else next.add(key);
+    return next;
+  }
 
   function toggleSelect(course: CatalogueCourse) {
     setSelected((prev) => {
@@ -72,21 +85,13 @@ export default function CourseSearch({ onClose, onAdd, isAdded, filter, autoExpa
   }
 
   function toggleSchool(school: string) {
-    setOpenSchools((prev) => {
-      const next = new Set(prev);
-      if (next.has(school)) next.delete(school);
-      else next.add(school);
-      return next;
-    });
+    if (defaultOpen) setClosedSchools((prev) => flip(prev, school));
+    else setOpenSchools((prev) => flip(prev, school));
   }
 
   function toggleLevel(key: string) {
-    setOpenLevels((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
-      return next;
-    });
+    if (defaultOpen) setClosedLevels((prev) => flip(prev, key));
+    else setOpenLevels((prev) => flip(prev, key));
   }
 
   // Restrict the searchable set first (e.g. a Computing Science year), then by query.
@@ -100,8 +105,10 @@ export default function CourseSearch({ onClose, onAdd, isAdded, filter, autoExpa
     : base;
 
   const totalResults = tree.reduce((n, s) => n + s.total, 0);
-  const isSchoolOpen = (school: string) => autoExpand || q !== "" || openSchools.has(school);
-  const isLevelOpen = (key: string) => autoExpand || q !== "" || openLevels.has(key);
+  const isSchoolOpen = (school: string) =>
+    defaultOpen ? !closedSchools.has(school) : openSchools.has(school);
+  const isLevelOpen = (key: string) =>
+    defaultOpen ? !closedLevels.has(key) : openLevels.has(key);
   const selectedCount = selected.size;
 
   return (
